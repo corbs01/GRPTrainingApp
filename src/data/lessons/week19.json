@@ -1,0 +1,59 @@
+{
+    "id": "week19",
+    "title": "Loose-Leash Outdoors & Focus Around Dogs",
+    "summary": "Practice calm walking outside and attentive behavior near other dogs.",
+    "lessons": [
+      {
+        "id": "loose_leash_outdoors",
+        "title": "Loose-Leash 2 — Quiet Streets",
+        "objective": "Walk with slack leash in low-distraction outdoor areas.",
+        "duration": "3–5 min",
+        "materials": ["harness", "leash", "treats"],
+        "steps": [
+          "Start where puppy can succeed; reward every few steps.",
+          "Use frequent turns and 'let’s go' cue.",
+          "End session while still going well."
+        ],
+        "supportGuidelines": [
+          "If pulling starts: stop and wait for slack, then proceed.",
+          "Short, frequent sessions beat long ones."
+        ],
+        "safetyNotes": "Avoid hot pavement; check harness fit."
+      },
+      {
+        "id": "focus_near_dogs",
+        "title": "Focus Near Dogs — At Distance",
+        "objective": "Look at dogs calmly then reorient to handler.",
+        "duration": "2–3 min reps",
+        "materials": ["treats", "longer distance area"],
+        "steps": [
+          "When puppy sees a dog, mark the look and reward for turning back.",
+          "Maintain a distance where puppy can succeed.",
+          "Close distance slightly over days."
+        ],
+        "supportGuidelines": [
+          "Increase distance if barking or lunging.",
+          "Use rapid reinforcement at threshold."
+        ],
+        "safetyNotes": "Do not greet on tight leashes; avoid tense encounters."
+      },
+      {
+        "id": "settle_public",
+        "title": "Settle in Public — Foundations",
+        "objective": "Relax on mat in calm outdoor spots (park bench/café corner).",
+        "duration": "3–5 min",
+        "materials": ["mat", "treats"],
+        "steps": [
+          "Place mat, cue Down, feed intermittently for calm.",
+          "Keep sessions short and end with a calm release.",
+          "Increase environment difficulty slowly."
+        ],
+        "supportGuidelines": [
+          "Choose quiet times of day at first.",
+          "If restless: shorten and try again later."
+        ],
+        "safetyNotes": "Mind temperature, foot traffic, and hygiene."
+      }
+    ]
+  }
+  

@@ -1,0 +1,59 @@
+{
+    "id": "week14",
+    "title": "Stay Progression & Calm on Mat",
+    "summary": "Add duration and tiny distance to Stay; introduce the settle-on-mat behavior.",
+    "lessons": [
+      {
+        "id": "stay_duration",
+        "title": "Stay — Add Duration",
+        "objective": "Hold Sit/Down for 5–10 seconds with you close.",
+        "duration": "1–3 min, 2× daily",
+        "materials": ["treats"],
+        "steps": [
+          "Cue Sit + Stay. Count to 5; mark and treat.",
+          "Build to 10 seconds over sessions.",
+          "Occasionally step to the side and back."
+        ],
+        "supportGuidelines": [
+          "Randomize reward timing to keep engagement.",
+          "If breaking: halve criteria and try again."
+        ],
+        "safetyNotes": "Keep criteria easy; avoid repeated failures."
+      },
+      {
+        "id": "settle_mat_intro",
+        "title": "Settle on Mat — Intro",
+        "objective": "Teach puppy to relax on a designated mat.",
+        "duration": "2–3 min",
+        "materials": ["mat", "treats"],
+        "steps": [
+          "Place mat down; when puppy steps on it, mark and treat on mat.",
+          "Lure into Down on mat; feed several treats on mat.",
+          "Release after a short pause."
+        ],
+        "supportGuidelines": [
+          "Use higher-value treats for staying on the mat.",
+          "Practice after mild exercise to lower arousal."
+        ],
+        "safetyNotes": "Never use mat as punishment location."
+      },
+      {
+        "id": "recall_games",
+        "title": "Recall Games — Ping-Pong",
+        "objective": "Make recalls into a fun family game.",
+        "duration": "3–5 min",
+        "materials": ["treats", "two people (optional)"],
+        "steps": [
+          "Two people take turns calling 'Come!' from short distances.",
+          "Reward at arrival every time.",
+          "Increase distance slowly."
+        ],
+        "supportGuidelines": [
+          "Keep energy high and sessions short.",
+          "If confusion: only one person calls at a time."
+        ],
+        "safetyNotes": "Play in safe, enclosed spaces only."
+      }
+    ]
+  }
+  

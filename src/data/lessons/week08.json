@@ -1,0 +1,87 @@
+{
+    "id": "week08",
+    "title": "Welcome Home & Bonding",
+    "summary": "Build trust, start routines, and make training fun from day one.",
+    "lessons": [
+      {
+        "id": "name_game",
+        "title": "Name Game",
+        "objective": "Puppy learns that responding to their name brings rewards.",
+        "duration": "1–3 min, 2–3× daily",
+        "materials": ["treats"],
+        "steps": [
+          "Say your puppy’s name once in a cheerful tone.",
+          "When they look at you, say 'Yes!' and give a treat.",
+          "Wait a few seconds, then repeat 5–8 times."
+        ],
+        "supportGuidelines": [
+          "If distracted: move to a quieter space.",
+          "If overexcited: shorten the session, end on a success."
+        ],
+        "safetyNotes": "Avoid repeating the name rapidly or using it for corrections."
+      },
+      {
+        "id": "crate_love_1",
+        "title": "Crate Love 1",
+        "objective": "Create positive feelings about the crate.",
+        "duration": "2–5 min, several times daily",
+        "materials": ["crate", "treats", "soft bedding"],
+        "steps": [
+          "Toss treats just inside the crate for puppy to explore.",
+          "Let them enter/exit freely, no door closing yet.",
+          "Feed dinner in crate for positive association."
+        ],
+        "supportGuidelines": [
+          "If hesitant: start with treats near the door and progress slowly."
+        ],
+        "safetyNotes": "Never force entry; the crate should always feel safe."
+      },
+      {
+        "id": "potty_routine",
+        "title": "Potty Routine",
+        "objective": "Establish consistent bathroom habits.",
+        "duration": "Ongoing daily habit",
+        "materials": ["leash", "treat pouch"],
+        "steps": [
+          "Take puppy to the same spot every 2 hours and after meals/naps.",
+          "Use cue word ('Go potty!').",
+          "Reward immediately when finished."
+        ],
+        "supportGuidelines": [
+          "If accidents indoors: quietly clean with enzyme spray, no scolding."
+        ],
+        "safetyNotes": "Supervise constantly until reliable."
+      },
+      {
+        "id": "gentle_mouth_1",
+        "title": "Gentle Mouth 1",
+        "objective": "Teach puppy to control bite pressure.",
+        "duration": "1–2 min play intervals",
+        "materials": ["toys"],
+        "steps": [
+          "Offer toy; if puppy mouths skin, say 'Ouch' softly and pause play.",
+          "Resume after a few seconds when calm."
+        ],
+        "supportGuidelines": [
+          "Redirect biting to toys before hands get involved."
+        ],
+        "safetyNotes": "Avoid rough tug with tiny puppies; protect children’s hands."
+      },
+      {
+        "id": "handling_intro",
+        "title": "Handling Intro",
+        "objective": "Desensitize puppy to gentle touch.",
+        "duration": "1 min, a few times daily",
+        "materials": [],
+        "steps": [
+          "While puppy is calm, touch ears, paws, and collar.",
+          "Feed treat after each gentle touch."
+        ],
+        "supportGuidelines": [
+          "If puppy squirms: keep sessions short and pair with treats."
+        ],
+        "safetyNotes": "Stop if puppy shows distress."
+      }
+    ]
+  }
+  

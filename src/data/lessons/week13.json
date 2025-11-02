@@ -1,0 +1,59 @@
+{
+    "id": "week13",
+    "title": "Stay Foundations & Focus",
+    "summary": "Introduce the concept of staying put and building focus around mild distractions.",
+    "lessons": [
+      {
+        "id": "stay_foundations",
+        "title": "Stay — Foundations",
+        "objective": "Puppy learns to hold position briefly with you nearby.",
+        "duration": "1–2 min, 2× daily",
+        "materials": ["treats", "mat (optional)"],
+        "steps": [
+          "Ask for Sit. Open palm signal and say 'Stay'.",
+          "Count 1–2 seconds, then 'Yes' and treat.",
+          "Add tiny distance (half step) and reset."
+        ],
+        "supportGuidelines": [
+          "If breaking: shorten time/distance, reward more often.",
+          "Use a release cue like 'Free!' consistently."
+        ],
+        "safetyNotes": "Avoid long sessions; end before frustration."
+      },
+      {
+        "id": "recall_2",
+        "title": "Recall 2 — Indoors with Distance",
+        "objective": "Strengthen response with slightly longer distances indoors.",
+        "duration": "2 min, 2× daily",
+        "materials": ["treats"],
+        "steps": [
+          "Say name + 'Come!' once; jog backwards 2–3 steps.",
+          "Reward at your feet; scatter 2–3 treats for fun reset.",
+          "Increase distance gradually."
+        ],
+        "supportGuidelines": [
+          "If slow: use higher-value treats and enthusiastic praise.",
+          "Avoid calling when likely to fail (e.g., deep play)."
+        ],
+        "safetyNotes": "Never recall to end fun abruptly; keep recalls positive."
+      },
+      {
+        "id": "handling_grooming_2",
+        "title": "Handling & Grooming 2",
+        "objective": "Comfort with gentle brushing and paw handling.",
+        "duration": "1–3 min, several times weekly",
+        "materials": ["soft brush", "treats"],
+        "steps": [
+          "Touch paw → treat. Lift paw briefly → treat.",
+          "Brush one stroke → treat; repeat a few times.",
+          "Stop before puppy loses patience."
+        ],
+        "supportGuidelines": [
+          "If fidgety: reduce duration; pair each touch with a treat.",
+          "Practice after exercise when calmer."
+        ],
+        "safetyNotes": "Never restrain forcefully; watch for stress signals."
+      }
+    ]
+  }
+  

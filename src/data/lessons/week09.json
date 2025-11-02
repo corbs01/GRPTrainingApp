@@ -1,0 +1,61 @@
+{
+    "id": "week09",
+    "title": "First Cues & Alone Time",
+    "summary": "Begin simple cues and short independence practice.",
+    "lessons": [
+      {
+        "id": "sit",
+        "title": "Sit",
+        "objective": "Puppy learns to sit on cue.",
+        "duration": "1–3 min, 2–3× daily",
+        "materials": ["treats"],
+        "steps": [
+          "Hold treat to nose, lift slowly upward until puppy’s bottom touches ground.",
+          "Say 'Yes!' then treat.",
+          "Add cue word 'Sit' after 5–6 successes."
+        ],
+        "supportGuidelines": ["If jumping: raise treat slower or lure beside nose."],
+        "safetyNotes": "Avoid pushing on the back."
+      },
+      {
+        "id": "hand_touch",
+        "title": "Hand Touch",
+        "objective": "Teach puppy to touch your hand with their nose.",
+        "duration": "1–2 min",
+        "materials": ["treats"],
+        "steps": [
+          "Hold open palm near nose; when puppy sniffs/touches, mark 'Yes!' and treat.",
+          "Repeat 5 times per session."
+        ],
+        "supportGuidelines": ["If hesitant: smear small scent (cheese) on palm."],
+        "safetyNotes": "Keep sessions short and upbeat."
+      },
+      {
+        "id": "alone_time_1",
+        "title": "Alone Time 1",
+        "objective": "Puppy learns short comfortable separations.",
+        "duration": "1–5 min intervals",
+        "materials": ["crate or playpen", "chew toy"],
+        "steps": [
+          "Place puppy with chew, step out briefly, return before whining.",
+          "Gradually extend duration."
+        ],
+        "supportGuidelines": ["If crying: shorten next session; reward calm moments."],
+        "safetyNotes": "Never return mid-cry; wait for brief silence."
+      },
+      {
+        "id": "sound_socialization",
+        "title": "Sound Socialization",
+        "objective": "Expose puppy to gentle everyday sounds.",
+        "duration": "few minutes daily",
+        "materials": ["sound playlist", "treats"],
+        "steps": [
+          "Play quiet household noises (doorbell, vacuum) at low volume.",
+          "Reward calm behaviour."
+        ],
+        "supportGuidelines": ["Increase volume slowly over days."],
+        "safetyNotes": "Stop if signs of fear appear."
+      }
+    ]
+  }
+  

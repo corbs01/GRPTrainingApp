@@ -1,0 +1,48 @@
+{
+    "id": "week11",
+    "title": "Recall & Confidence",
+    "summary": "Strengthen response to your call and build trust in crate time.",
+    "lessons": [
+      {
+        "id": "recall_1",
+        "title": "Recall 1",
+        "objective": "Teach puppy to come when called.",
+        "duration": "2 min, 2× daily",
+        "materials": ["treats", "6 ft leash"],
+        "steps": [
+          "Call puppy’s name + cue ('Come!') once in cheerful tone.",
+          "Run backwards a step; reward on arrival.",
+          "Finish with praise party."
+        ],
+        "supportGuidelines": ["If puppy ignores: use higher-value treat, shorter distance."],
+        "safetyNotes": "Never call for punishment; make recalls fun."
+      },
+      {
+        "id": "trade_game",
+        "title": "Trade Game",
+        "objective": "Teach puppy to release items willingly.",
+        "duration": "1–2 min",
+        "materials": ["toy", "treats"],
+        "steps": [
+          "Say 'Trade' and offer treat near toy.",
+          "When puppy releases toy, mark and treat; give toy back."
+        ],
+        "supportGuidelines": ["Use valuable treat to build trust."],
+        "safetyNotes": "Avoid chasing puppy for items."
+      },
+      {
+        "id": "crate_love_2",
+        "title": "Crate Love 2",
+        "objective": "Close crate door briefly; reward calm behaviour.",
+        "duration": "2–5 min",
+        "materials": ["crate", "treats"],
+        "steps": [
+          "Feed puppy in crate; gently close door for a few seconds.",
+          "Open door while calm; reward."
+        ],
+        "supportGuidelines": ["If whining: shorten time; avoid releasing mid-cry."],
+        "safetyNotes": "Keep positive associations only."
+      }
+    ]
+  }
+  

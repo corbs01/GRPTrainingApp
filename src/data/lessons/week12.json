@@ -1,0 +1,49 @@
+{
+    "id": "week12",
+    "title": "Leash & Calm Greetings",
+    "summary": "Introduce walking gear and polite social manners.",
+    "lessons": [
+      {
+        "id": "harness_intro",
+        "title": "Harness Intro",
+        "objective": "Puppy becomes comfortable wearing a harness.",
+        "duration": "1–3 min, multiple times",
+        "materials": ["harness", "treats"],
+        "steps": [
+          "Let puppy sniff harness; reward.",
+          "Slip harness on partially, treat, remove.",
+          "Gradually clip fully for short periods."
+        ],
+        "supportGuidelines": ["If puppy resists: break into smaller steps, go slower."],
+        "safetyNotes": "Ensure fit isn’t too tight; remove if chewing straps."
+      },
+      {
+        "id": "leash_indoors_1",
+        "title": "Indoor Leash Intro",
+        "objective": "Teach puppy to move calmly on leash indoors.",
+        "duration": "2–3 min",
+        "materials": ["harness", "light leash", "treats"],
+        "steps": [
+          "Attach leash, drop treats near you while walking slowly.",
+          "Reward when leash stays loose."
+        ],
+        "supportGuidelines": ["Keep sessions short to prevent pulling habit."],
+        "safetyNotes": "Never jerk leash; encourage following willingly."
+      },
+      {
+        "id": "calm_greetings_1",
+        "title": "Calm Greetings 1",
+        "objective": "Teach puppy to sit politely for attention.",
+        "duration": "1–2 min practice with friends/family",
+        "materials": ["treats"],
+        "steps": [
+          "Ask puppy to Sit before greeting.",
+          "Person pets only when puppy remains seated.",
+          "If jumping: withdraw attention until four paws down."
+        ],
+        "supportGuidelines": ["Train family/guests to follow same rule."],
+        "safetyNotes": "Avoid rough restraint; patience wins."
+      }
+    ]
+  }
+  

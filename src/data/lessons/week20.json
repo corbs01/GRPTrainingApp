@@ -1,0 +1,59 @@
+{
+    "id": "week20",
+    "title": "Distraction Proofing & Household Harmony",
+    "summary": "Raise criteria for attention, door manners, and independence.",
+    "lessons": [
+      {
+        "id": "distraction_work_2",
+        "title": "Distraction Work 2 — Moving People/Objects",
+        "objective": "Hold cues while people move or mild noises occur.",
+        "duration": "2–3 min",
+        "materials": ["treats"],
+        "steps": [
+          "Cue Down; have a helper walk past at distance.",
+          "Reward calm holding; release and reset.",
+          "Add mild noises (chair scrape, gentle door close)."
+        ],
+        "supportGuidelines": [
+          "Increase one variable at a time.",
+          "Return to easier criteria after any failure."
+        ],
+        "safetyNotes": "Avoid startle; keep surfaces grippy."
+      },
+      {
+        "id": "doorway_manners_advanced",
+        "title": "Doorway Manners — Advanced",
+        "objective": "Wait calmly as door fully opens and guests enter.",
+        "duration": "3–5 min",
+        "materials": ["leash", "treats"],
+        "steps": [
+          "Ask for Sit/Stay; open door fully.",
+          "Reward for holding; release to greet when calm.",
+          "Practice with one guest at a time."
+        ],
+        "supportGuidelines": [
+          "If breaking: reduce door opening or add distance.",
+          "Use mat stationing for extra structure."
+        ],
+        "safetyNotes": "Secure doors; mind delivery drivers and bikes."
+      },
+      {
+        "id": "independence_home",
+        "title": "Independence at Home",
+        "objective": "Relax in a different room without handler for short periods.",
+        "duration": "3–8 min",
+        "materials": ["safe chew", "bed/mat"],
+        "steps": [
+          "Settle puppy with chew; go to adjacent room.",
+          "Return before distress; vary routine.",
+          "Gradually add door closed for brief moments."
+        ],
+        "supportGuidelines": [
+          "Track durations in Journal; progress slowly.",
+          "Pair with white noise if helpful."
+        ],
+        "safetyNotes": "Puppy-proof space; use only safe chews unsupervised."
+      }
+    ]
+  }
+  

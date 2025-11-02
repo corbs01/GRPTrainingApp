@@ -1,0 +1,48 @@
+{
+    "id": "week10",
+    "title": "Down & Leave-It Foundations",
+    "summary": "Introduce impulse control and polite behaviour.",
+    "lessons": [
+      {
+        "id": "down_1",
+        "title": "Down 1",
+        "objective": "Puppy offers relaxed down on cue.",
+        "duration": "1–3 min",
+        "materials": ["treats", "mat"],
+        "steps": [
+          "Lure nose to floor then forward so elbows drop.",
+          "Mark and feed several treats on floor.",
+          "Add cue word after several reps."
+        ],
+        "supportGuidelines": ["If stuck: start from sit; lure slower."],
+        "safetyNotes": "Never push the puppy’s shoulders."
+      },
+      {
+        "id": "leave_it_1",
+        "title": "Leave-It 1",
+        "objective": "Teach puppy to back off from a tempting item.",
+        "duration": "1–2 min",
+        "materials": ["treats (low + high value)"],
+        "steps": [
+          "Show closed fist with treat inside; wait for puppy to back away.",
+          "Mark 'Yes' and give a different treat from other hand."
+        ],
+        "supportGuidelines": ["If nibbling hand: keep fist closed, stay still."],
+        "safetyNotes": "Never yell; reward calm choices."
+      },
+      {
+        "id": "cat_intro_1",
+        "title": "Cat Scent Intro (Optional)",
+        "objective": "Begin calm curiosity toward household cats.",
+        "duration": "few short sessions",
+        "materials": ["cat-scented cloth", "treats"],
+        "steps": [
+          "Let puppy sniff cat scent cloth; reward calm sniffing.",
+          "End before arousal or barking."
+        ],
+        "supportGuidelines": ["Keep cats separate initially; pair scent with treats."],
+        "safetyNotes": "No face-to-face meetings yet."
+      }
+    ]
+  }
+  

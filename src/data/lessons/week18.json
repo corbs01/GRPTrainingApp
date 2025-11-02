@@ -1,0 +1,59 @@
+{
+    "id": "week18",
+    "title": "Distraction Work 1 & Alone Time 2",
+    "summary": "Introduce mild distractions and extend comfortable separations.",
+    "lessons": [
+      {
+        "id": "distraction_work_1",
+        "title": "Distraction Work 1 — Simple Challenges",
+        "objective": "Maintain Sit/Down with mild distractions nearby.",
+        "duration": "2–3 min",
+        "materials": ["treats", "low-level distractions"],
+        "steps": [
+          "Cue Sit; drop a soft object 2m away; reward staying.",
+          "Add tiny movement (step sideways) while puppy holds.",
+          "Return and feed several treats."
+        ],
+        "supportGuidelines": [
+          "One distraction at a time.",
+          "Lower difficulty if you get failures."
+        ],
+        "safetyNotes": "Keep surfaces non-slip; prevent startle."
+      },
+      {
+        "id": "alone_time_2",
+        "title": "Alone Time 2 — Build Duration",
+        "objective": "Comfortable short alone periods with enrichment.",
+        "duration": "3–10 min sessions",
+        "materials": ["safe chew", "stuffed toy"],
+        "steps": [
+          "Place enrichment; leave room quietly.",
+          "Return before distress; vary durations.",
+          "Log progress in Journal."
+        ],
+        "supportGuidelines": [
+          "Use white noise or calm music if helpful.",
+          "If whining: shorten next session; reward calm on return."
+        ],
+        "safetyNotes": "Use only vet-approved chews during absences."
+      },
+      {
+        "id": "greetings_2",
+        "title": "Calm Greetings 2 — With Visitors",
+        "objective": "Hold Sit for greeting with new people.",
+        "duration": "2–3 min practice",
+        "materials": ["treats", "leash"],
+        "steps": [
+          "Puppy sits before greeting; visitor pets only while seated.",
+          "If stand/jump: visitor pauses attention; handler resets.",
+          "Reward calm throughout."
+        ],
+        "supportGuidelines": [
+          "Coach visitors beforehand.",
+          "Use leash to prevent rehearsal of jumping."
+        ],
+        "safetyNotes": "Avoid overwhelming the puppy with large groups."
+      }
+    ]
+  }
+  

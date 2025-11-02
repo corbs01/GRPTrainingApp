@@ -1,0 +1,59 @@
+{
+    "id": "week15",
+    "title": "Loose-Leash Basics & Leave-It 2",
+    "summary": "Start leash manners indoors and add difficulty to Leave-It.",
+    "lessons": [
+      {
+        "id": "loose_leash_1",
+        "title": "Loose-Leash 1 — Indoors",
+        "objective": "Follow handler with slack leash inside.",
+        "duration": "2–3 min",
+        "materials": ["harness", "light leash", "treats"],
+        "steps": [
+          "Take 3–4 steps; reward by your leg when leash is loose.",
+          "Change direction often; mark following.",
+          "End before puppy forges ahead."
+        ],
+        "supportGuidelines": [
+          "Use many tiny rewards at your side initially.",
+          "If pulling: stop briefly, then move when leash slackens."
+        ],
+        "safetyNotes": "Avoid leash pops/jerks; keep it upbeat."
+      },
+      {
+        "id": "leave_it_2",
+        "title": "Leave-It 2 — Floor Temptation",
+        "objective": "Back off from visible item on the floor.",
+        "duration": "1–2 min",
+        "materials": ["low-value item", "high-value treats"],
+        "steps": [
+          "Place item under your foot; let puppy notice.",
+          "When puppy disengages, mark and reward from your hand.",
+          "Gradually uncover item more."
+        ],
+        "supportGuidelines": [
+          "If fixated: increase distance or value of reward.",
+          "Reward multiple times for sustained disengagement."
+        ],
+        "safetyNotes": "Prevent access to unsafe items."
+      },
+      {
+        "id": "settle_mat_build",
+        "title": "Settle on Mat — Build",
+        "objective": "Increase calm duration on the mat with light distractions.",
+        "duration": "2–3 min",
+        "materials": ["mat", "treats"],
+        "steps": [
+          "Cue Down on mat; feed intermittently while calm.",
+          "Add tiny movements (sit down, step away 1 step).",
+          "Release before restlessness."
+        ],
+        "supportGuidelines": [
+          "If breaking: shorten duration and reduce distractions.",
+          "Use calm feeding (treats placed low on mat)."
+        ],
+        "safetyNotes": "Keep arousal low; avoid exciting play on the mat."
+      }
+    ]
+  }
+  

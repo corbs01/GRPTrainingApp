@@ -1,0 +1,59 @@
+{
+    "id": "week17",
+    "title": "Vet Prep & Cat Supervision (Optional)",
+    "summary": "Build cooperative care skills and begin calm, gated cat sessions if applicable.",
+    "lessons": [
+      {
+        "id": "vet_prep",
+        "title": "Vet Prep — Cooperative Care",
+        "objective": "Comfort with exam positions and brief restraint.",
+        "duration": "2–3 min, several times weekly",
+        "materials": ["treats", "towel (exam surface)"],
+        "steps": [
+          "Touch ear → treat; lift lip → treat; hold collar → treat.",
+          "Briefly simulate thermometer lift tail → treat.",
+          "End with calm cuddle and snack."
+        ],
+        "supportGuidelines": [
+          "Break steps down; treat after each tiny action.",
+          "Practice on elevated surface only if safe."
+        ],
+        "safetyNotes": "Stop if distress; never force procedures."
+      },
+      {
+        "id": "cat_supervised_1",
+        "title": "Cat Sessions 1 (Optional) — Gated Visual",
+        "objective": "Calm observation of the cat through a barrier.",
+        "duration": "1–2 min bursts",
+        "materials": ["baby gate", "treats"],
+        "steps": [
+          "Puppy on leash observes cat through gate.",
+          "Mark and reward looking then turning back to you.",
+          "End before arousal rises."
+        ],
+        "supportGuidelines": [
+          "If fixation: increase distance, reward for disengagement.",
+          "Keep cat escape routes available."
+        ],
+        "safetyNotes": "Never allow chasing; prioritize cat welfare."
+      },
+      {
+        "id": "handling_muzzle_touch",
+        "title": "Muzzle/Chin Target (Care Aid)",
+        "objective": "Teach a cooperative 'chin on hand' for stillness.",
+        "duration": "1–2 min",
+        "materials": ["treats"],
+        "steps": [
+          "Hand under chin; when puppy rests chin, mark and treat.",
+          "Extend duration to 2–3 seconds gradually.",
+          "Use during brief brushing or vet prep."
+        ],
+        "supportGuidelines": [
+          "If restless: reduce duration, increase reward frequency.",
+          "Train after light exercise."
+        ],
+        "safetyNotes": "Keep it voluntary; release frequently."
+      }
+    ]
+  }
+  

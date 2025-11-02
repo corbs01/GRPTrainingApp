@@ -1,0 +1,59 @@
+{
+    "id": "week16",
+    "title": "Public Manners Foundations",
+    "summary": "Transition skills toward the outdoors: polite doorways and early leash work outside.",
+    "lessons": [
+      {
+        "id": "doorway_manners",
+        "title": "Calm Doorways",
+        "objective": "Wait calmly at doors before going through.",
+        "duration": "2–3 min",
+        "materials": ["leash", "treats"],
+        "steps": [
+          "Approach door; ask for Sit.",
+          "Crack door open; if puppy stands, close gently and reset.",
+          "Release cue to go through when calm."
+        ],
+        "supportGuidelines": [
+          "Practice both entering and exiting.",
+          "Reward calm focus at your side."
+        ],
+        "safetyNotes": "Prevent door dashing with leash management."
+      },
+      {
+        "id": "loose_leash_2_prep",
+        "title": "Loose-Leash 2 — Outdoor Prep",
+        "objective": "Take indoor leash manners to the backyard/quiet area.",
+        "duration": "2–4 min",
+        "materials": ["harness", "leash", "treats"],
+        "steps": [
+          "Start in low-distraction outdoor spot.",
+          "Reward every 1–2 steps at your side.",
+          "Keep sessions short; end before pulling begins."
+        ],
+        "supportGuidelines": [
+          "If aroused: move back indoors to refresh success.",
+          "Use frequent turns to keep engagement."
+        ],
+        "safetyNotes": "Choose safe footing and avoid busy times initially."
+      },
+      {
+        "id": "leave_it_food",
+        "title": "Leave-It — Food Level Up",
+        "objective": "Ignore dropped food with guidance.",
+        "duration": "1–2 min",
+        "materials": ["kibble", "high-value treats"],
+        "steps": [
+          "Drop a kibble covered by your shoe.",
+          "Mark and reward disengagement from your hand.",
+          "Progress to uncovered kibble with leash control."
+        ],
+        "supportGuidelines": [
+          "Increase item value slowly (kibble → biscuit → cheese).",
+          "Keep rate of reinforcement high."
+        ],
+        "safetyNotes": "Prevent ingestion of unsafe foods."
+      }
+    ]
+  }
+  
