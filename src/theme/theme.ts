@@ -10,6 +10,7 @@ export type AppTheme = {
     sm: number;
     md: number;
     lg: number;
+    pill: number;
   };
   shadow: {
     soft: {
@@ -31,19 +32,20 @@ export const lightTheme: AppTheme = {
   typography,
   spacing: (value = 1) => value * 8,
   radius: {
-    sm: 8,
+    sm: 10,
     md: 16,
-    lg: 28
+    lg: 24,
+    pill: 999
   },
   shadow: {
     soft: {
-      elevation: 3,
-      shadowColor: "#00000022",
+      elevation: 4,
+      shadowColor: "rgba(47, 53, 56, 0.15)",
       shadowOpacity: 0.18,
-      shadowRadius: 4,
+      shadowRadius: 8,
       shadowOffset: {
         width: 0,
-        height: 2
+        height: 4
       }
     }
   }

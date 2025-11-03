@@ -1,22 +1,32 @@
 export const palette = {
-  blushPink: "#F7D6E0",
-  butterYellow: "#FFF5C3",
-  seaFoam: "#CBE8E0",
-  skyBlue: "#C7E4FF",
-  lavender: "#E1D4F7",
-  clay: "#E6C9A8",
-  charcoal: "#3F4246",
-  white: "#FFFFFF",
-  offWhite: "#F9F7F2"
+  pastelBeige: "#F5E9DA",
+  sage: "#B7C7A5",
+  mistBlue: "#C6DAE6",
+  sand: "#E8D3B9",
+  charcoal: "#2F3538",
+  cream: "#FFFBF4",
+  softSage: "#D8E6CF",
+  softMist: "#DCE9F1",
+  warmHighlight: "#F9E2C3",
+  white: "#FFFFFF"
 } as const;
 
 export const themeColors = {
-  background: palette.offWhite,
-  card: palette.white,
-  accent: palette.skyBlue,
-  primary: palette.lavender,
-  secondary: palette.seaFoam,
+  background: palette.pastelBeige,
+  surface: palette.cream,
+  card: palette.cream,
+  primary: palette.sage,
+  primarySoft: palette.softSage,
+  secondary: palette.mistBlue,
+  accent: palette.sand,
   textPrimary: palette.charcoal,
-  textSecondary: "#6F7377",
-  border: "#E3E1DC"
+  textSecondary: "#5F686C",
+  textMuted: "#7C868A",
+  onPrimary: "#1F2A22",
+  onSecondary: "#213037",
+  onAccent: "#2B2418",
+  border: "#E6D7C6",
+  overlay: "rgba(47, 53, 56, 0.08)",
+  success: "#9CC4A5",
+  warning: "#E6C188"
 } as const;
