@@ -16,11 +16,17 @@ type LessonCardProps = {
   lesson: LessonSummary;
   practiced: boolean;
   onToggle: () => void;
+  onPress?: () => void;
 };
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export const LessonCard: React.FC<LessonCardProps> = ({ lesson, practiced, onToggle }) => {
+export const LessonCard: React.FC<LessonCardProps> = ({
+  lesson,
+  practiced,
+  onToggle,
+  onPress
+}) => {
   const theme = useTheme();
   const progress = useSharedValue(practiced ? 1 : 0);
 
@@ -69,8 +75,17 @@ export const LessonCard: React.FC<LessonCardProps> = ({ lesson, practiced, onTog
       <AnimatedPressable
         accessibilityRole="button"
         accessibilityState={{ checked: practiced }}
-        accessibilityLabel={`Mark ${lesson.title} as practiced`}
-        onPress={onToggle}
+        accessibilityLabel={
+          onPress
+            ? `View details for ${lesson.title}`
+            : `Mark ${lesson.title} as practiced`
+        }
+        accessibilityHint={
+          onPress
+            ? "Opens lesson details. Double tap the check icon to toggle completion."
+            : "Marks the lesson as practiced."
+        }
+        onPress={onPress ?? onToggle}
         style={[
           styles.row,
           {
@@ -81,21 +96,32 @@ export const LessonCard: React.FC<LessonCardProps> = ({ lesson, practiced, onTog
           backgroundStyle
         ]}
       >
-        <Animated.View
-          style={[
-            styles.checkCircle,
-            {
-              borderRadius: circleSize / 2,
-              width: circleSize,
-              height: circleSize
-            },
-            checkStyle
-          ]}
+        <Pressable
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: practiced }}
+          accessibilityLabel={`Mark ${lesson.title} as practiced`}
+          hitSlop={12}
+          onPress={(event) => {
+            event.stopPropagation();
+            onToggle();
+          }}
         >
-          <Animated.View style={[styles.checkIcon, iconStyle]}>
-            <Feather name="check" size={18} color={theme.colors.onPrimary} />
+          <Animated.View
+            style={[
+              styles.checkCircle,
+              {
+                borderRadius: circleSize / 2,
+                width: circleSize,
+                height: circleSize
+              },
+              checkStyle
+            ]}
+          >
+            <Animated.View style={[styles.checkIcon, iconStyle]}>
+              <Feather name="check" size={18} color={theme.colors.onPrimary} />
+            </Animated.View>
           </Animated.View>
-        </Animated.View>
+        </Pressable>
         <View style={[styles.content, { marginLeft: theme.spacing(1) }]}>
           <Text
             style={[
