@@ -1,0 +1,95 @@
+{
+  "weeks": [
+    {
+      "id": "week08",
+      "number": 8,
+      "title": "Welcome Home & Bonding",
+      "focus": "Build trust, start routines, and make training fun from day one.",
+      "lessonIds": ["name_game", "crate_love_1", "potty_routine", "gentle_mouth_1", "handling_intro"]
+    },
+    {
+      "id": "week09",
+      "number": 9,
+      "title": "First Cues & Alone Time",
+      "focus": "Begin simple cues and short independence practice.",
+      "lessonIds": ["sit", "hand_touch", "alone_time_1", "sound_socialization"]
+    },
+    {
+      "id": "week10",
+      "number": 10,
+      "title": "Down & Leave-It Foundations",
+      "focus": "Introduce impulse control and polite behaviour.",
+      "lessonIds": ["down_1", "leave_it_1", "cat_intro_1"]
+    },
+    {
+      "id": "week11",
+      "number": 11,
+      "title": "Recall & Confidence",
+      "focus": "Strengthen response to your call and build trust in crate time.",
+      "lessonIds": ["recall_1", "trade_game", "crate_love_2"]
+    },
+    {
+      "id": "week12",
+      "number": 12,
+      "title": "Leash & Calm Greetings",
+      "focus": "Introduce walking gear and polite social manners.",
+      "lessonIds": ["harness_intro", "leash_indoors_1", "calm_greetings_1"]
+    },
+    {
+      "id": "week13",
+      "number": 13,
+      "title": "Stay Foundations & Focus",
+      "focus": "Introduce the concept of staying put and building focus around mild distractions.",
+      "lessonIds": ["stay_foundations", "recall_2", "handling_grooming_2"]
+    },
+    {
+      "id": "week14",
+      "number": 14,
+      "title": "Stay Progression & Calm on Mat",
+      "focus": "Add duration and tiny distance to Stay; introduce the settle-on-mat behavior.",
+      "lessonIds": ["stay_duration", "settle_mat_intro", "recall_games"]
+    },
+    {
+      "id": "week15",
+      "number": 15,
+      "title": "Loose-Leash Basics & Leave-It 2",
+      "focus": "Start leash manners indoors and add difficulty to Leave-It.",
+      "lessonIds": ["loose_leash_1", "leave_it_2", "settle_mat_build"]
+    },
+    {
+      "id": "week16",
+      "number": 16,
+      "title": "Public Manners Foundations",
+      "focus": "Transition skills toward the outdoors: polite doorways and early leash work outside.",
+      "lessonIds": ["doorway_manners", "loose_leash_2_prep", "leave_it_food"]
+    },
+    {
+      "id": "week17",
+      "number": 17,
+      "title": "Vet Prep & Cat Supervision (Optional)",
+      "focus": "Build cooperative care skills and begin calm, gated cat sessions if applicable.",
+      "lessonIds": ["vet_prep", "cat_supervised_1", "handling_muzzle_touch"]
+    },
+    {
+      "id": "week18",
+      "number": 18,
+      "title": "Distraction Work 1 & Alone Time 2",
+      "focus": "Introduce mild distractions and extend comfortable separations.",
+      "lessonIds": ["distraction_work_1", "alone_time_2", "greetings_2"]
+    },
+    {
+      "id": "week19",
+      "number": 19,
+      "title": "Loose-Leash Outdoors & Focus Around Dogs",
+      "focus": "Practice calm walking outside and attentive behavior near other dogs.",
+      "lessonIds": ["loose_leash_outdoors", "focus_near_dogs", "settle_public"]
+    },
+    {
+      "id": "week20",
+      "number": 20,
+      "title": "Distraction Proofing & Household Harmony",
+      "focus": "Raise criteria for attention, door manners, and independence.",
+      "lessonIds": ["distraction_work_2", "doorway_manners_advanced", "independence_home"]
+    }
+  ]
+}

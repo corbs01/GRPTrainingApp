@@ -12,4 +12,5 @@ export type RootStackParamList = {
   Week: {
     weekId: string;
   };
+  Onboarding: undefined;
 };

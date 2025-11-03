@@ -3,6 +3,7 @@ import { NavigationContainer, DefaultTheme, Theme } from "@react-navigation/nati
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Feather } from "@expo/vector-icons";
+import { ActivityIndicator, View } from "react-native";
 
 import {
   HomeScreen,
@@ -11,9 +12,11 @@ import {
   JournalScreen,
   GalleryScreen,
   SupportScreen,
-  SettingsScreen
+  SettingsScreen,
+  OnboardingScreen
 } from "@app/screens";
 import { useTheme } from "@theme/index";
+import { usePuppyStore } from "@state/puppyStore";
 import { RootStackParamList, RootTabParamList } from "./types";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -50,6 +53,8 @@ const TabNavigator = () => {
 
 export const AppNavigator = () => {
   const theme = useTheme();
+  const hydrated = usePuppyStore((state) => state.hydrated);
+  const hasPuppy = usePuppyStore((state) => Boolean(state.puppy));
   const navigationTheme = React.useMemo<Theme>(
     () => ({
       ...DefaultTheme,
@@ -65,9 +70,25 @@ export const AppNavigator = () => {
     [theme]
   );
 
+  if (!hydrated) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: theme.colors.background,
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <ActivityIndicator size="large" color={theme.colors.accent} />
+      </View>
+    );
+  }
+
   return (
     <NavigationContainer theme={navigationTheme}>
       <Stack.Navigator
+        initialRouteName={hasPuppy ? "RootTabs" : "Onboarding"}
         screenOptions={{
           headerTintColor: theme.colors.textPrimary,
           headerStyle: {
@@ -75,6 +96,13 @@ export const AppNavigator = () => {
           }
         }}
       >
+        <Stack.Screen
+          name="Onboarding"
+          component={OnboardingScreen}
+          options={{
+            headerShown: false
+          }}
+        />
         <Stack.Screen name="RootTabs" component={TabNavigator} options={{ headerShown: false }} />
         <Stack.Screen name="Week" component={WeekScreen} options={{ title: "Training Week" }} />
       </Stack.Navigator>
