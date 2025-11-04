@@ -5,16 +5,25 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  TextStyle,
   View,
   useWindowDimensions
 } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring
+} from "react-native-reanimated";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { ScreenContainer } from "@components/ScreenContainer";
+import { Illustration } from "@components/Illustration";
 import { useTheme } from "@theme/index";
 import { RootStackParamList } from "@app/navigation/types";
 import { getAllWeeks, getWeekLessonSummaries, WeekSummary } from "@data/index";
+import { getWeekIllustrationKey } from "@data/illustrations";
+import { IllustrationKey, ILLUSTRATION_FALLBACK } from "@lib/illustrations";
 import { usePuppyStore } from "@state/puppyStore";
 
 const MIN_WEEK = 8;
@@ -28,7 +37,7 @@ type TimelineMilestone = {
   title: string;
   focus: string;
   skills: string[];
-  illustrationLabel: string;
+  illustrationKey: IllustrationKey;
   status: "available" | "placeholder";
 };
 
@@ -38,38 +47,38 @@ const DUMMY_WEEK_DATA: Record<
     title: string;
     focus: string;
     skills: string[];
-    illustrationLabel: string;
+    illustrationKey: IllustrationKey;
   }
 > = {
   8: {
     title: "Welcome Home & Bonding",
     focus: "Get cozy, set routines, and build trust together.",
     skills: ["Name Game", "Crate Comfort", "Potty Rhythm"],
-    illustrationLabel: "Homecoming Huddle"
+    illustrationKey: "homecoming"
   },
   9: {
     title: "First Cues & Alone Time",
     focus: "Layer in simple cues and practice gentle independence.",
     skills: ["Sit Foundations", "Hand Target", "Calm Alone Time"],
-    illustrationLabel: "First Cues"
+    illustrationKey: "sit"
   },
   10: {
     title: "Down & Leave-It Foundations",
     focus: "Introduce impulse control games and polite manners.",
     skills: ["Easy Down", "Leave-It Basics", "Calm Cat Intro"],
-    illustrationLabel: "Impulse Control"
+    illustrationKey: "leaveIt"
   },
   11: {
     title: "Recall & Confidence",
     focus: "Boost response to your call and crate confidence.",
     skills: ["Recall Party", "Trade Game", "Crate Love"],
-    illustrationLabel: "Recall Party"
+    illustrationKey: "recall"
   },
   12: {
     title: "Leash & Calm Greetings",
     focus: "Introduce walking gear and polite social hellos.",
     skills: ["Harness Happy", "Indoor Leash Start", "Calm Greetings"],
-    illustrationLabel: "Leash Practice"
+    illustrationKey: "leash"
   }
 };
 
@@ -86,11 +95,17 @@ const generateTimelineData = (weeks: WeekSummary[]): TimelineMilestone[] => {
 
     const fallbackTitle = `Week ${weekNumber}`;
     const fallbackFocus = "Training roadmap coming soon.";
+    const fallbackIllustration = ILLUSTRATION_FALLBACK;
 
     const lessonTitles =
       definedWeek?.id && !dummyWeek
         ? getWeekLessonSummaries(definedWeek.id).slice(0, 3).map((lesson) => lesson.title)
         : dummyWeek?.skills ?? [];
+
+    const illustrationKey: IllustrationKey =
+      definedWeek?.id
+        ? getWeekIllustrationKey(definedWeek.id)
+        : dummyWeek?.illustrationKey ?? fallbackIllustration;
 
     milestones.push({
       id: definedWeek?.id ?? null,
@@ -98,7 +113,7 @@ const generateTimelineData = (weeks: WeekSummary[]): TimelineMilestone[] => {
       title: dummyWeek?.title ?? definedWeek?.title ?? fallbackTitle,
       focus: dummyWeek?.focus ?? definedWeek?.focus ?? fallbackFocus,
       skills: lessonTitles.length > 0 ? lessonTitles : ["Details to be announced"],
-      illustrationLabel: dummyWeek?.illustrationLabel ?? `Week ${weekNumber}`,
+      illustrationKey,
       status: definedWeek ? "available" : "placeholder"
     });
   }
@@ -113,6 +128,36 @@ export const TimelineScreen: React.FC = () => {
   const [orientation, setOrientation] = React.useState<TimelineOrientation>("horizontal");
   const [data] = React.useState<TimelineMilestone[]>(() => generateTimelineData(getAllWeeks()));
   const listRef = React.useRef<FlatList<TimelineMilestone>>(null);
+  const cardThemeValues = React.useMemo(
+    () => ({
+      card: theme.colors.card,
+      border: theme.colors.border,
+      accent: theme.colors.accent,
+      textPrimary: theme.colors.textPrimary,
+      textSecondary: theme.colors.textSecondary,
+      textMuted: theme.colors.textMuted,
+      paletteSoft: theme.palette.softMist,
+      radius: theme.radius.md,
+      button: theme.typography.textVariants.button,
+      body: theme.typography.textVariants.body,
+      caption: theme.typography.textVariants.caption,
+      title: theme.typography.textVariants.title
+    }),
+    [
+      theme.colors.accent,
+      theme.colors.border,
+      theme.colors.card,
+      theme.colors.textMuted,
+      theme.colors.textPrimary,
+      theme.colors.textSecondary,
+      theme.palette.softMist,
+      theme.radius.md,
+      theme.typography.textVariants.body,
+      theme.typography.textVariants.button,
+      theme.typography.textVariants.caption,
+      theme.typography.textVariants.title
+    ]
+  );
 
   const rawCurrentWeek = usePuppyStore((state) => state.getCurrentWeekNumber());
   const currentWeek = React.useMemo(() => {
@@ -172,107 +217,17 @@ export const TimelineScreen: React.FC = () => {
       const isAvailable = item.status === "available" && Boolean(item.id);
 
       return (
-        <Pressable
+        <TimelineMilestoneCard
+          milestone={item}
+          isCurrent={isCurrent}
+          isAvailable={isAvailable}
+          dimensions={{
+            width: orientation === "horizontal" ? horizontalCardWidth : verticalCardWidth,
+            height: cardHeight
+          }}
+          themeValues={cardThemeValues}
           onPress={() => handleNavigate(item)}
-          disabled={!isAvailable}
-          style={({ pressed }) => [
-            styles.card,
-            {
-              borderColor: isCurrent ? theme.colors.accent : theme.colors.border,
-              borderWidth: isCurrent ? 2 : StyleSheet.hairlineWidth,
-              backgroundColor: theme.colors.card,
-              width: orientation === "horizontal" ? horizontalCardWidth : verticalCardWidth,
-              height: cardHeight,
-              opacity: pressed ? 0.95 : 1
-            },
-            !isAvailable && styles.cardDisabled
-          ]}
-        >
-          <View
-            style={[
-              styles.illustration,
-              {
-                backgroundColor: theme.palette.softMist,
-                borderRadius: theme.radius.md
-              }
-            ]}
-          >
-            <Text
-              style={[
-                theme.typography.textVariants.caption,
-                styles.illustrationLabel,
-                { color: theme.colors.onSecondary }
-              ]}
-            >
-              {item.illustrationLabel}
-            </Text>
-          </View>
-
-          <Text
-            style={[
-              theme.typography.textVariants.caption,
-              styles.weekLabel,
-              { color: theme.colors.textMuted }
-            ]}
-          >
-            Week {item.weekNumber}
-          </Text>
-          <Text
-            style={[
-              theme.typography.textVariants.title,
-              styles.cardTitle,
-              { color: theme.colors.textPrimary }
-            ]}
-          >
-            {item.title}
-          </Text>
-          <Text
-            style={[
-              theme.typography.textVariants.body,
-              styles.cardFocus,
-              { color: theme.colors.textSecondary }
-            ]}
-          >
-            {item.focus}
-          </Text>
-
-          <View style={styles.skillsBlock}>
-            <Text
-              style={[
-                theme.typography.textVariants.caption,
-                styles.skillsHeading,
-                { color: theme.colors.textMuted }
-              ]}
-            >
-              Key Skills Preview
-            </Text>
-            {item.skills.map((skill) => (
-              <Text
-                key={skill}
-                style={[
-                  theme.typography.textVariants.body,
-                  styles.skillRow,
-                  { color: theme.colors.textPrimary }
-                ]}
-              >
-                • {skill}
-              </Text>
-            ))}
-          </View>
-
-          <View style={styles.footerRow}>
-            <Text
-              style={[
-                theme.typography.textVariants.button,
-                {
-                  color: isAvailable ? theme.colors.accent : theme.colors.textMuted
-                }
-              ]}
-            >
-              {isAvailable ? "Go to week" : "Coming soon"}
-            </Text>
-          </View>
-        </Pressable>
+        />
       );
     },
     [
@@ -281,19 +236,7 @@ export const TimelineScreen: React.FC = () => {
       handleNavigate,
       horizontalCardWidth,
       orientation,
-      theme.colors.accent,
-      theme.colors.card,
-      theme.colors.onSecondary,
-      theme.colors.textMuted,
-      theme.colors.textPrimary,
-      theme.colors.textSecondary,
-      theme.colors.border,
-      theme.palette.softMist,
-      theme.radius.md,
-      theme.typography.textVariants.body,
-      theme.typography.textVariants.button,
-      theme.typography.textVariants.caption,
-      theme.typography.textVariants.title,
+      cardThemeValues,
       verticalCardWidth
     ]
   );
@@ -425,6 +368,164 @@ export const TimelineScreen: React.FC = () => {
   );
 };
 
+type TimelineCardThemeValues = {
+  card: string;
+  border: string;
+  accent: string;
+  textPrimary: string;
+  textSecondary: string;
+  textMuted: string;
+  paletteSoft: string;
+  radius: number;
+  button: TextStyle;
+  body: TextStyle;
+  caption: TextStyle;
+  title: TextStyle;
+};
+
+type TimelineMilestoneCardProps = {
+  milestone: TimelineMilestone;
+  isCurrent: boolean;
+  isAvailable: boolean;
+  dimensions: { width: number; height: number };
+  onPress: () => void;
+  themeValues: TimelineCardThemeValues;
+};
+
+const AnimatedCardContainer = Animated.createAnimatedComponent(View);
+
+const TimelineMilestoneCard: React.FC<TimelineMilestoneCardProps> = React.memo(
+  ({ milestone, isCurrent, isAvailable, dimensions, onPress, themeValues }) => {
+    const scale = useSharedValue(isCurrent ? 1 : 0.97);
+
+    React.useEffect(() => {
+      scale.value = withSpring(isCurrent ? 1 : 0.97, {
+        damping: 18,
+        stiffness: 240,
+        mass: 0.85
+      });
+    }, [isCurrent, scale]);
+
+    const animatedStyle = useAnimatedStyle(() => ({
+      transform: [{ scale: scale.value }]
+    }));
+
+    const artSize = React.useMemo(
+      () => Math.min(dimensions.width * 0.55, 140),
+      [dimensions.width]
+    );
+
+    return (
+      <AnimatedCardContainer
+        style={[
+          styles.cardContainer,
+          {
+            width: dimensions.width,
+            height: dimensions.height
+          },
+          animatedStyle
+        ]}
+      >
+        <Pressable
+          onPress={onPress}
+          disabled={!isAvailable}
+          style={({ pressed }) => [
+            styles.card,
+            {
+              borderColor: isCurrent ? themeValues.accent : themeValues.border,
+              borderWidth: isCurrent ? 2 : StyleSheet.hairlineWidth,
+              backgroundColor: themeValues.card,
+              opacity: pressed ? 0.95 : 1
+            },
+            !isAvailable && styles.cardDisabled
+          ]}
+        >
+          <View
+            style={[
+              styles.illustration,
+              {
+                backgroundColor: themeValues.paletteSoft,
+                borderRadius: themeValues.radius
+              }
+            ]}
+          >
+            <Illustration
+              name={milestone.illustrationKey}
+              size={artSize}
+              style={styles.illustrationImage}
+            />
+          </View>
+
+          <Text
+            style={[
+              themeValues.caption,
+              styles.weekLabel,
+              { color: themeValues.textMuted }
+            ]}
+          >
+            Week {milestone.weekNumber}
+          </Text>
+          <Text
+            style={[
+              themeValues.title,
+              styles.cardTitle,
+              { color: themeValues.textPrimary }
+            ]}
+          >
+            {milestone.title}
+          </Text>
+          <Text
+            style={[
+              themeValues.body,
+              styles.cardFocus,
+              { color: themeValues.textSecondary }
+            ]}
+          >
+            {milestone.focus}
+          </Text>
+
+          <View style={styles.skillsBlock}>
+            <Text
+              style={[
+                themeValues.caption,
+                styles.skillsHeading,
+                { color: themeValues.textMuted }
+              ]}
+            >
+              Key Skills Preview
+            </Text>
+            {milestone.skills.map((skill) => (
+              <Text
+                key={skill}
+                style={[
+                  themeValues.body,
+                  styles.skillRow,
+                  { color: themeValues.textPrimary }
+                ]}
+              >
+                • {skill}
+              </Text>
+            ))}
+          </View>
+
+          <View style={styles.footerRow}>
+            <Text
+              style={[
+                themeValues.button,
+                {
+                  color: isAvailable ? themeValues.accent : themeValues.textMuted
+                }
+              ]}
+            >
+              {isAvailable ? "Go to week" : "Coming soon"}
+            </Text>
+          </View>
+        </Pressable>
+      </AnimatedCardContainer>
+    );
+  }
+);
+
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 0
@@ -457,23 +558,25 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
     paddingHorizontal: 20
   },
+  cardContainer: {
+    flexShrink: 0
+  },
   card: {
     borderRadius: 24,
     padding: 20,
-    justifyContent: "space-between"
+    justifyContent: "space-between",
+    flex: 1
   },
   cardDisabled: {
     opacity: 0.6
   },
   illustration: {
-    height: 120,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 16
   },
-  illustrationLabel: {
-    textTransform: "uppercase",
-    letterSpacing: 1
+  illustrationImage: {
+    alignSelf: "center"
   },
   weekLabel: {
     textTransform: "uppercase",

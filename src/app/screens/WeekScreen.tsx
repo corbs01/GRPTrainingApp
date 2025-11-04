@@ -17,6 +17,7 @@ import { Feather } from "@expo/vector-icons";
 import { ScreenContainer } from "@components/ScreenContainer";
 import { Card } from "@components/Card";
 import { LessonCard } from "@components/LessonCard";
+import { Illustration } from "@components/Illustration";
 import { useTheme } from "@theme/index";
 import { RootStackParamList } from "@app/navigation/types";
 import {
@@ -26,6 +27,7 @@ import {
   LessonDetail,
   WeekLessonContent
 } from "@data/index";
+import { getWeekIllustrationKey } from "@data/illustrations";
 import { useTrainingStore } from "@state/trainingStore";
 
 type WeekScreenRoute = RouteProp<RootStackParamList, "Week">;
@@ -104,6 +106,10 @@ export const WeekScreen: React.FC = () => {
   );
 
   const practicedLessonIds = completedLessons ?? [];
+  const heroIllustrationKey = React.useMemo(
+    () => getWeekIllustrationKey(weekSummary?.id ?? ""),
+    [weekSummary?.id]
+  );
 
   if (!resolvedWeekId || !weekContent) {
     return (
@@ -134,55 +140,74 @@ export const WeekScreen: React.FC = () => {
     <>
       <ScreenContainer scrollable>
         <Card tone="highlight">
-          <Text
+          <View
             style={[
-              theme.typography.textVariants.caption,
+              styles.heroRow,
               {
-                color: theme.colors.primary,
-                textTransform: "uppercase",
-                letterSpacing: 1.1
+                marginBottom: theme.spacing(1.5)
               }
             ]}
           >
-            Week {weekSummary?.number ?? ""}
-          </Text>
-          <Text
-            style={[
-              theme.typography.textVariants.title,
-              {
-                color: theme.colors.textPrimary,
-                marginTop: theme.spacing(0.5)
-              }
-            ]}
-          >
-            {weekContent.title}
-          </Text>
-          {weekSummary?.focus ? (
-            <Text
-              style={[
-                theme.typography.textVariants.body,
-                {
-                  color: theme.colors.textSecondary,
-                  marginTop: theme.spacing(0.75)
-                }
-              ]}
-            >
-              Focus: {weekSummary.focus}
-            </Text>
-          ) : null}
-          {weekContent.summary ? (
-            <Text
-              style={[
-                theme.typography.textVariants.body,
-                {
-                  color: theme.colors.textSecondary,
-                  marginTop: theme.spacing(0.75)
-                }
-              ]}
-            >
-              {weekContent.summary}
-            </Text>
-          ) : null}
+            <View style={{ flex: 1, paddingRight: theme.spacing(1) }}>
+              <Text
+                style={[
+                  theme.typography.textVariants.caption,
+                  {
+                    color: theme.colors.primary,
+                    textTransform: "uppercase",
+                    letterSpacing: 1.1
+                  }
+                ]}
+              >
+                Week {weekSummary?.number ?? ""}
+              </Text>
+              <Text
+                style={[
+                  theme.typography.textVariants.title,
+                  {
+                    color: theme.colors.textPrimary,
+                    marginTop: theme.spacing(0.5)
+                  }
+                ]}
+              >
+                {weekContent.title}
+              </Text>
+              {weekSummary?.focus ? (
+                <Text
+                  style={[
+                    theme.typography.textVariants.body,
+                    {
+                      color: theme.colors.textSecondary,
+                      marginTop: theme.spacing(0.75)
+                    }
+                  ]}
+                >
+                  Focus: {weekSummary.focus}
+                </Text>
+              ) : null}
+              {weekContent.summary ? (
+                <Text
+                  style={[
+                    theme.typography.textVariants.body,
+                    {
+                      color: theme.colors.textSecondary,
+                      marginTop: theme.spacing(0.75)
+                    }
+                  ]}
+                >
+                  {weekContent.summary}
+                </Text>
+              ) : null}
+            </View>
+            <Illustration
+              name={heroIllustrationKey}
+              size={theme.spacing(10)}
+              style={{
+                borderRadius: theme.radius.lg,
+                backgroundColor: theme.palette.softMist
+              }}
+            />
+          </View>
         </Card>
 
         <View style={{ marginTop: theme.spacing(2) }}>
@@ -244,6 +269,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center"
+  },
+  heroRow: {
+    flexDirection: "row",
+    alignItems: "center"
   }
 });
 

@@ -13,7 +13,8 @@ module.exports = function (api) {
             "@state": "./src/state",
             "@lib": "./src/lib",
             "@theme": "./src/theme",
-            "@data": "./src/data"
+            "@data": "./src/data",
+            "@assets": "./assets"
           }
         }
       ]
