@@ -12,6 +12,7 @@ import week17 from "./lessons/week17.json";
 import week18 from "./lessons/week18.json";
 import week19 from "./lessons/week19.json";
 import week20 from "./lessons/week20.json";
+import supportLibrary from "./support.json";
 
 type WeekCatalogEntry = {
   id: string;
@@ -35,6 +36,25 @@ type WeekLessonSource = {
     supportGuidelines?: string[];
     safetyNotes?: string;
   }>;
+};
+
+export type SupportTip = {
+  id: string;
+  title: string;
+  summary: string;
+  tips: string[];
+};
+
+export type SupportCategory = {
+  id: string;
+  title: string;
+  description: string;
+  keywords: string[];
+  items: SupportTip[];
+};
+
+type SupportLibrarySource = {
+  categories: SupportCategory[];
 };
 
 export type LessonSummary = {
@@ -89,6 +109,8 @@ export const getWeekByNumber = (weekNumber: number | null): WeekSummary | undefi
 export const getWeekById = (weekId: string): WeekSummary | undefined =>
   weeksList.find((week) => week.id === weekId);
 
+export const getAllWeeks = (): WeekSummary[] => [...weeksList];
+
 export const getWeekLessonSummaries = (weekId: string): LessonSummary[] => {
   const source = lessonsByWeek[weekId];
   if (!source) {
@@ -135,4 +157,50 @@ export const getWeekLessonContent = (weekId: string): WeekLessonContent | undefi
       safetyNotes: lesson.safetyNotes
     }))
   };
+};
+
+const supportCategories = (supportLibrary as SupportLibrarySource).categories;
+
+export const getSupportCategories = (): SupportCategory[] =>
+  supportCategories.map((category) => ({
+    ...category,
+    items: category.items.map((item) => ({
+      ...item,
+      tips: [...item.tips]
+    }))
+  }));
+
+export const searchSupportLibrary = (query: string): SupportCategory[] => {
+  if (!query.trim()) {
+    return getSupportCategories();
+  }
+
+  const q = query.trim().toLowerCase();
+
+  return supportCategories
+    .map((category) => {
+      const categoryMatches =
+        category.title.toLowerCase().includes(q) ||
+        category.description.toLowerCase().includes(q) ||
+        category.keywords.some((keyword) => keyword.toLowerCase().includes(q));
+
+      const items = category.items.filter((item) => {
+        if (item.title.toLowerCase().includes(q) || item.summary.toLowerCase().includes(q)) {
+          return true;
+        }
+
+        return item.tips.some((tip) => tip.toLowerCase().includes(q));
+      });
+
+      if (categoryMatches) {
+        return { ...category, items: category.items.map((item) => ({ ...item, tips: [...item.tips] })) };
+      }
+
+      if (items.length > 0) {
+        return { ...category, items: items.map((item) => ({ ...item, tips: [...item.tips] })) };
+      }
+
+      return null;
+    })
+    .filter((category): category is SupportCategory => Boolean(category));
 };

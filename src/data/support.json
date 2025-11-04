@@ -1,0 +1,82 @@
+{
+  "categories": [
+    {
+      "id": "potty-training",
+      "title": "Potty Training",
+      "description": "Quick routines to build consistent bathroom habits.",
+      "keywords": ["potty", "bathroom", "accident", "house training"],
+      "items": [
+        {
+          "id": "potty-schedule",
+          "title": "Stick To A Schedule",
+          "summary": "Take your puppy to the same potty spot first thing in the morning, after meals, naps, and play.",
+          "tips": [
+            "Use a leash so you can reward in place immediately after they go.",
+            "Keep a potty log to spot patterns and tighten the schedule."
+          ]
+        },
+        {
+          "id": "potty-crate",
+          "title": "Limit Free Roaming",
+          "summary": "Until potty habits are solid, rotate between crate time, supervised play, and potty breaks.",
+          "tips": [
+            "If an accident happens, interrupt gently and bring them outside without scolding.",
+            "Increase freedom only after three clean days in a row."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "crate-training",
+      "title": "Crate Training",
+      "description": "Build a cozy den that your puppy chooses on their own.",
+      "keywords": ["crate", "settle", "sleep", "home alone"],
+      "items": [
+        {
+          "id": "crate-intro",
+          "title": "Positive Introductions",
+          "summary": "Start with the door open and drop treats inside while you sit nearby.",
+          "tips": [
+            "Feed meals in the crate and place a chew toy inside to create positive associations.",
+            "Close the door for short intervals only when they are relaxed."
+          ]
+        },
+        {
+          "id": "crate-alone",
+          "title": "Practice Short Separations",
+          "summary": "Gradually build duration while you stay in the room, then step away briefly.",
+          "tips": [
+            "Pair departures with a stuffed Kong so the crate stays rewarding.",
+            "Return before whining escalates to keep success momentum."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "biting-nipping",
+      "title": "Biting & Nipping",
+      "description": "Redirect mouthy behavior into calm choices.",
+      "keywords": ["biting", "nipping", "chew", "play"],
+      "items": [
+        {
+          "id": "biting-toys",
+          "title": "Offer Legal Chews",
+          "summary": "Keep tug toys and chews ready so you can swap the moment teeth touch skin or clothes.",
+          "tips": [
+            "Rotate toy textures often to keep them interesting.",
+            "Praise when they re-engage with the chew instead of your hands."
+          ]
+        },
+        {
+          "id": "biting-breaks",
+          "title": "Interrupt & Reset",
+          "summary": "If redirection fails twice, give a quick calm break in the crate or behind a gate.",
+          "tips": [
+            "Avoid yelling - stay neutral to prevent adding excitement.",
+            "End the break when they take a breath and relax, then reset play calmly."
+          ]
+        }
+      ]
+    }
+  ]
+}
