@@ -16,6 +16,10 @@ import {
 
 import { ThemeProvider, lightTheme } from "@theme/index";
 import { AppNavigator } from "@app/navigation";
+import { ContentValidationBanner } from "@components/ContentValidationBanner";
+import { initializeContent } from "@lib/contentLoader";
+
+initializeContent();
 
 const App: React.FC = () => {
   const [fontsLoaded] = useFonts({
@@ -39,7 +43,10 @@ const App: React.FC = () => {
   return (
     <ThemeProvider>
       <SafeAreaProvider>
-        <AppNavigator />
+        <View style={{ flex: 1 }}>
+          <ContentValidationBanner />
+          <AppNavigator />
+        </View>
       </SafeAreaProvider>
     </ThemeProvider>
   );

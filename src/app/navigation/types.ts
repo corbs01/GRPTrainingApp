@@ -1,7 +1,13 @@
 export type RootTabParamList = {
   Home: undefined;
   Timeline: undefined;
-  Journal: undefined;
+  Journal:
+    | {
+        quickAdd?: boolean;
+        weekId?: string;
+        lessonId?: string;
+      }
+    | undefined;
   Gallery: undefined;
   Support: undefined;
   Settings: undefined;

@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
+  ActivityIndicator,
   Image,
   KeyboardAvoidingView,
   Modal,
@@ -15,6 +16,8 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Feather } from "@expo/vector-icons";
+import { useNavigation, useRoute, RouteProp, useFocusEffect } from "@react-navigation/native";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 
 import { ScreenContainer } from "@components/ScreenContainer";
 import { Button } from "@components/Button";
@@ -26,15 +29,31 @@ import {
   WeekSummary
 } from "@data/index";
 import { useJournalStore, JournalEntry } from "@state/journalStore";
+import { processJournalPhoto, deleteJournalMedia } from "@lib/media";
+import { RootTabParamList } from "@app/navigation/types";
+
+type JournalTabNavigation = BottomTabNavigationProp<RootTabParamList, "Journal">;
+type JournalRoute = RouteProp<RootTabParamList, "Journal">;
+type PhotoAsset = {
+  photoUri: string;
+  thumbnailUri: string;
+};
 
 export const JournalScreen: React.FC = () => {
   const theme = useTheme();
+  const navigation = useNavigation<JournalTabNavigation>();
+  const route = useRoute<JournalRoute>();
+
   const [modalVisible, setModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [entryText, setEntryText] = useState("");
   const [selectedWeekId, setSelectedWeekId] = useState<string>();
   const [selectedLessonId, setSelectedLessonId] = useState<string>();
-  const [photoUri, setPhotoUri] = useState<string>();
+  const [photoAsset, setPhotoAsset] = useState<PhotoAsset>();
+  const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
+  const [isSavingEntry, setIsSavingEntry] = useState(false);
+  const [filterWeekId, setFilterWeekId] = useState<string | "all">("all");
+  const [filterLessonId, setFilterLessonId] = useState<string | "all">("all");
 
   const entries = useJournalStore((state) => state.entries);
   const addEntry = useJournalStore((state) => state.addEntry);
@@ -64,6 +83,43 @@ export const JournalScreen: React.FC = () => {
       })),
     [weeks]
   );
+  const defaultWeekId = weekOptions[0]?.id;
+
+  const weekFilterOptions = useMemo(
+    () => [
+      { id: "all", label: "All weeks" },
+      ...weekOptions
+    ],
+    [weekOptions]
+  );
+
+  const lessonFilterOptions = useMemo(() => {
+    if (filterWeekId === "all") {
+      return [];
+    }
+    const map = lessonsLookup.get(filterWeekId);
+    if (!map) {
+      return [];
+    }
+    return Array.from(map.values()).map((lesson) => ({
+      id: lesson.id,
+      label: lesson.title
+    }));
+  }, [filterWeekId, lessonsLookup]);
+
+  useEffect(() => {
+    if (filterWeekId === "all") {
+      setFilterLessonId("all");
+      return;
+    }
+    if (filterLessonId === "all") {
+      return;
+    }
+    const lessonExists = lessonsLookup.get(filterWeekId)?.has(filterLessonId);
+    if (!lessonExists) {
+      setFilterLessonId("all");
+    }
+  }, [filterWeekId, filterLessonId, lessonsLookup]);
 
   const sections = useMemo(() => {
     const grouped = new Map<
@@ -72,18 +128,33 @@ export const JournalScreen: React.FC = () => {
     >();
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
+    const entryMatches = (entry: JournalEntry) => {
+      if (filterWeekId !== "all" && entry.weekId !== filterWeekId) {
+        return false;
+      }
+      if (filterLessonId !== "all" && entry.lessonId !== filterLessonId) {
+        return false;
+      }
+      if (!normalizedQuery) {
+        return true;
+      }
+      const weekTitle = weekMap.get(entry.weekId)?.title ?? "";
+      const lessonTitle = entry.lessonId
+        ? lessonsLookup.get(entry.weekId)?.get(entry.lessonId)?.title ?? ""
+        : "";
+      return `${entry.text} ${weekTitle} ${lessonTitle}`
+        .toLowerCase()
+        .includes(normalizedQuery);
+    };
+
     entries.forEach((entry) => {
+      if (!entryMatches(entry)) {
+        return;
+      }
       const week = weekMap.get(entry.weekId);
       const label = week
         ? `Week ${week.number} • ${week.title}`
         : "Unassigned Week";
-      const matches =
-        normalizedQuery.length === 0 ||
-        label.toLowerCase().includes(normalizedQuery);
-      if (!matches) {
-        return;
-      }
-
       const key = week?.id ?? "unassigned";
       const existing = grouped.get(key);
       if (existing) {
@@ -103,7 +174,7 @@ export const JournalScreen: React.FC = () => {
         data: [...section.data].sort((a, b) => b.createdAt - a.createdAt)
       }))
       .sort((a, b) => (b.week?.number ?? 0) - (a.week?.number ?? 0));
-  }, [entries, searchQuery, weekMap]);
+  }, [entries, filterLessonId, filterWeekId, lessonsLookup, searchQuery, weekMap]);
 
   const lessonsForSelectedWeek = useMemo(() => {
     if (!selectedWeekId) {
@@ -114,21 +185,60 @@ export const JournalScreen: React.FC = () => {
       lessonsLookup.get(selectedWeekId)?.values() ?? []
     );
   }, [lessonsLookup, selectedWeekId]);
+  const resetComposer = useCallback(
+    async (options?: { retainMedia?: boolean }) => {
+      if (!options?.retainMedia && photoAsset) {
+        await deleteJournalMedia(photoAsset.photoUri);
+        await deleteJournalMedia(photoAsset.thumbnailUri);
+      }
+      setEntryText("");
+      setSelectedWeekId(undefined);
+      setSelectedLessonId(undefined);
+      setPhotoAsset(undefined);
+    },
+    [photoAsset]
+  );
 
-  const openModal = () => {
-    setSelectedWeekId((prev) => prev ?? weeks[0]?.id);
-    setModalVisible(true);
-  };
+  const openModal = useCallback(
+    (payload?: { weekId?: string; lessonId?: string }) => {
+      setSelectedWeekId(payload?.weekId ?? defaultWeekId);
+      setSelectedLessonId(payload?.lessonId);
+      setModalVisible(true);
+    },
+    [defaultWeekId]
+  );
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setModalVisible(false);
-    setEntryText("");
-    setSelectedWeekId(undefined);
-    setSelectedLessonId(undefined);
-    setPhotoUri(undefined);
-  };
+    void resetComposer();
+  }, [resetComposer]);
 
-  const handlePickImage = async () => {
+  const handlePickerResult = useCallback(
+    async (result: ImagePicker.ImagePickerResult) => {
+      if (result.canceled || !result.assets?.length) {
+        return;
+      }
+      try {
+        setIsProcessingPhoto(true);
+        if (photoAsset) {
+          await deleteJournalMedia(photoAsset.photoUri);
+          await deleteJournalMedia(photoAsset.thumbnailUri);
+        }
+        const processed = await processJournalPhoto(result.assets[0].uri);
+        setPhotoAsset(processed);
+      } catch (error) {
+        Alert.alert(
+          "Could not attach photo",
+          "Try again or choose a different image."
+        );
+      } finally {
+        setIsProcessingPhoto(false);
+      }
+    },
+    [photoAsset]
+  );
+
+  const handlePickFromLibrary = useCallback(async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
       Alert.alert(
@@ -141,15 +251,42 @@ export const JournalScreen: React.FC = () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsMultipleSelection: false,
-      quality: 0.8
+      quality: 0.9
     });
 
-    if (!result.canceled && result.assets?.length > 0) {
-      setPhotoUri(result.assets[0]?.uri);
-    }
-  };
+    await handlePickerResult(result);
+  }, [handlePickerResult]);
 
-  const handleSaveEntry = () => {
+  const handleCapturePhoto = useCallback(async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert(
+        "Permission needed",
+        "Camera access is required to capture a photo."
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.9
+    });
+
+    await handlePickerResult(result);
+  }, [handlePickerResult]);
+
+  const handleClearPhoto = useCallback(async () => {
+    if (!photoAsset) {
+      return;
+    }
+    setIsProcessingPhoto(true);
+    await deleteJournalMedia(photoAsset.photoUri);
+    await deleteJournalMedia(photoAsset.thumbnailUri);
+    setPhotoAsset(undefined);
+    setIsProcessingPhoto(false);
+  }, [photoAsset]);
+
+  const handleSaveEntry = useCallback(async () => {
     const trimmed = entryText.trim();
 
     if (!selectedWeekId) {
@@ -162,15 +299,40 @@ export const JournalScreen: React.FC = () => {
       return;
     }
 
-    addEntry({
-      weekId: selectedWeekId,
-      lessonId: selectedLessonId,
-      text: trimmed,
-      photoUri
-    });
+    try {
+      setIsSavingEntry(true);
+      addEntry({
+        weekId: selectedWeekId,
+        lessonId: selectedLessonId,
+        text: trimmed,
+        photoUri: photoAsset?.photoUri,
+        thumbnailUri: photoAsset?.thumbnailUri
+      });
+      setModalVisible(false);
+      await resetComposer({ retainMedia: true });
+    } finally {
+      setIsSavingEntry(false);
+    }
+  }, [addEntry, entryText, photoAsset, resetComposer, selectedLessonId, selectedWeekId]);
 
-    closeModal();
-  };
+  useFocusEffect(
+    useCallback(() => {
+      if (!route.params?.quickAdd) {
+        return;
+      }
+      openModal({ weekId: route.params.weekId, lessonId: route.params.lessonId });
+      navigation.setParams({ quickAdd: undefined });
+    }, [navigation, openModal, route.params?.lessonId, route.params?.quickAdd, route.params?.weekId])
+  );
+
+  useEffect(() => {
+    return () => {
+      if (modalVisible && photoAsset) {
+        void deleteJournalMedia(photoAsset.photoUri);
+        void deleteJournalMedia(photoAsset.thumbnailUri);
+      }
+    };
+  }, [modalVisible, photoAsset]);
 
   const renderSectionHeader = ({
     section
@@ -311,7 +473,7 @@ export const JournalScreen: React.FC = () => {
               color={theme.colors.onPrimary}
             />
           }
-          onPress={openModal}
+          onPress={() => openModal()}
         />
       </View>
 
@@ -333,7 +495,7 @@ export const JournalScreen: React.FC = () => {
         <TextInput
           value={searchQuery}
           onChangeText={setSearchQuery}
-          placeholder="Filter by week (e.g. Week 10)"
+          placeholder="Search notes or lesson names"
           placeholderTextColor={theme.colors.textMuted}
           style={[
             styles.searchInput,
@@ -341,6 +503,118 @@ export const JournalScreen: React.FC = () => {
           ]}
         />
       </View>
+
+      <View style={styles.filterSection}>
+        <Text style={[styles.filterLabel, { color: theme.colors.textSecondary }]}>Week filter</Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chipRow}
+        >
+          {weekFilterOptions.map((option) => {
+            const isSelected = filterWeekId === option.id;
+            return (
+              <Pressable
+                key={option.id}
+                onPress={() => setFilterWeekId(option.id)}
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: isSelected
+                      ? theme.colors.accent
+                      : theme.colors.surface,
+                    borderColor: theme.colors.border
+                  }
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.chipText,
+                    {
+                      color: isSelected
+                        ? theme.colors.onAccent
+                        : theme.colors.textPrimary
+                    }
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {filterWeekId !== "all" && lessonFilterOptions.length > 0 && (
+        <View style={styles.filterSection}>
+          <Text style={[styles.filterLabel, { color: theme.colors.textSecondary }]}>Lesson filter</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chipRow}
+          >
+            <Pressable
+              key="lesson-all"
+              onPress={() => setFilterLessonId("all")}
+              style={[
+                styles.chip,
+                {
+                  backgroundColor:
+                    filterLessonId === "all"
+                      ? theme.colors.accent
+                      : theme.colors.surface,
+                  borderColor: theme.colors.border
+                }
+              ]}
+            >
+              <Text
+                style={[
+                  styles.chipText,
+                  {
+                    color:
+                      filterLessonId === "all"
+                        ? theme.colors.onAccent
+                        : theme.colors.textPrimary
+                  }
+                ]}
+              >
+                All lessons
+              </Text>
+            </Pressable>
+            {lessonFilterOptions.map((option) => {
+              const isSelected = filterLessonId === option.id;
+              return (
+                <Pressable
+                  key={option.id}
+                  onPress={() => setFilterLessonId(option.id)}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: isSelected
+                        ? theme.colors.secondary
+                        : theme.colors.surface,
+                      borderColor: theme.colors.border
+                    }
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.chipText,
+                      {
+                        color: isSelected
+                          ? theme.colors.onSecondary
+                          : theme.colors.textPrimary
+                      }
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </View>
+      )}
 
       {sections.length > 0 ? (
         <SectionList
@@ -547,22 +821,27 @@ export const JournalScreen: React.FC = () => {
 
                 <View style={styles.photoRow}>
                   <Button
-                    label={photoUri ? "Change Photo" : "Add Photo"}
+                    label="Use camera"
                     variant="outline"
-                    icon={
-                      <Feather
-                        name="image"
-                        size={16}
-                        color={theme.colors.textPrimary}
-                      />
-                    }
-                    onPress={handlePickImage}
+                    icon={<Feather name="camera" size={16} color={theme.colors.textPrimary} />}
+                    onPress={handleCapturePhoto}
+                    disabled={isProcessingPhoto}
+                    style={[styles.photoButton, { marginRight: theme.spacing(0.75) }]}
                   />
-                  {photoUri && (
+                  <Button
+                    label={photoAsset ? "Replace from library" : "Choose from library"}
+                    variant="outline"
+                    icon={<Feather name="image" size={16} color={theme.colors.textPrimary} />}
+                    onPress={handlePickFromLibrary}
+                    disabled={isProcessingPhoto}
+                    style={[styles.photoButton, { marginLeft: theme.spacing(0.75) }]}
+                  />
+                  {photoAsset && (
                     <Pressable
-                      onPress={() => setPhotoUri(undefined)}
+                      onPress={handleClearPhoto}
                       style={styles.clearPhoto}
                       hitSlop={16}
+                      disabled={isProcessingPhoto}
                     >
                       <Feather
                         name="trash-2"
@@ -572,9 +851,22 @@ export const JournalScreen: React.FC = () => {
                     </Pressable>
                   )}
                 </View>
-                {photoUri && (
+                {isProcessingPhoto && (
+                  <View style={styles.processingRow}>
+                    <ActivityIndicator size="small" color={theme.colors.accent} />
+                    <Text
+                      style={[
+                        styles.processingText,
+                        { color: theme.colors.textSecondary }
+                      ]}
+                    >
+                      Preparing photo...
+                    </Text>
+                  </View>
+                )}
+                {photoAsset?.photoUri && (
                   <Image
-                    source={{ uri: photoUri }}
+                    source={{ uri: photoAsset.photoUri }}
                     style={styles.previewImage}
                   />
                 )}
@@ -588,9 +880,11 @@ export const JournalScreen: React.FC = () => {
                   style={styles.modalActionButton}
                 />
                 <Button
-                  label="Save Entry"
+                  label={isSavingEntry ? "Saving..." : "Save Entry"}
                   onPress={handleSaveEntry}
-                  disabled={!selectedWeekId || entryText.trim().length === 0}
+                  disabled={
+                    !selectedWeekId || entryText.trim().length === 0 || isSavingEntry || isProcessingPhoto
+                  }
                   style={styles.modalActionButton}
                 />
               </View>
@@ -775,14 +1069,36 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginBottom: 16
   },
+  filterSection: {
+    marginBottom: 12
+  },
+  filterLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    marginBottom: 6
+  },
   photoRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    flexWrap: "wrap",
     marginBottom: 12
+  },
+  photoButton: {
+    flexGrow: 1,
+    flexBasis: "48%",
+    marginBottom: 8
   },
   clearPhoto: {
     padding: 8
+  },
+  processingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12
+  },
+  processingText: {
+    fontSize: 13,
+    marginLeft: 8
   },
   previewImage: {
     height: 180,

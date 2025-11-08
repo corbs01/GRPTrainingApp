@@ -1,48 +1,64 @@
 {
-    "id": "week11",
-    "title": "Recall & Confidence",
-    "summary": "Strengthen response to your call and build trust in crate time.",
-    "lessons": [
-      {
-        "id": "recall_1",
-        "title": "Recall 1",
-        "objective": "Teach puppy to come when called.",
-        "duration": "2 min, 2× daily",
-        "materials": ["treats", "6 ft leash"],
-        "steps": [
-          "Call puppy’s name + cue ('Come!') once in cheerful tone.",
-          "Run backwards a step; reward on arrival.",
-          "Finish with praise party."
-        ],
-        "supportGuidelines": ["If puppy ignores: use higher-value treat, shorter distance."],
-        "safetyNotes": "Never call for punishment; make recalls fun."
-      },
-      {
-        "id": "trade_game",
-        "title": "Trade Game",
-        "objective": "Teach puppy to release items willingly.",
-        "duration": "1–2 min",
-        "materials": ["toy", "treats"],
-        "steps": [
-          "Say 'Trade' and offer treat near toy.",
-          "When puppy releases toy, mark and treat; give toy back."
-        ],
-        "supportGuidelines": ["Use valuable treat to build trust."],
-        "safetyNotes": "Avoid chasing puppy for items."
-      },
-      {
-        "id": "crate_love_2",
-        "title": "Crate Love 2",
-        "objective": "Close crate door briefly; reward calm behaviour.",
-        "duration": "2–5 min",
-        "materials": ["crate", "treats"],
-        "steps": [
-          "Feed puppy in crate; gently close door for a few seconds.",
-          "Open door while calm; reward."
-        ],
-        "supportGuidelines": ["If whining: shorten time; avoid releasing mid-cry."],
-        "safetyNotes": "Keep positive associations only."
-      }
-    ]
-  }
-  
+  "id": "week11",
+  "title": "Recall & Confidence",
+  "summary": "Recharge crate comfort while teaching puppies that coming when called is the best party.",
+  "lessons": [
+    {
+      "id": "recall_1",
+      "title": "Ping-Pong Recall",
+      "objective": "Build lightning-fast runs between two people.",
+      "duration": "5 min",
+      "materials": ["two people", "treats", "long hallway or yard"],
+      "steps": [
+        "Person A kneels, says the puppy's name once, then the recall cue here.",
+        "Celebrate with five rapid treats when the puppy arrives.",
+        "Person B calls as soon as the puppy is eating the last treat, rewarding on arrival.",
+        "Add gentle distractions like clapping or sitting farther apart after success."
+      ],
+      "supportGuidelines": [
+        "Coach families to keep cues upbeat—no angry tone, even if the puppy detours.",
+        "Encourage practicing on leash outside before trying off-leash spaces.",
+        "Track success rate; aim for 90% indoors before moving outdoors."
+      ],
+      "safetyNotes": "Avoid slick floors that could cause sliding when the puppy sprints."
+    },
+    {
+      "id": "trade_game",
+      "title": "Trade Game",
+      "objective": "Prevent resource guarding by teaching puppies to swap calmly.",
+      "duration": "4 min",
+      "materials": ["treats", "low-value chew", "higher-value chew"],
+      "steps": [
+        "Give the puppy a low-value chew to hold.",
+        "Present a treat to their nose, say trade, and mark when they release the chew.",
+        "Return the original chew or upgrade to the higher-value item.",
+        "Repeat with random household objects (tug rope, sock) once they understand the game."
+      ],
+      "supportGuidelines": [
+        "Remind humans to keep hands relaxed—no yanking objects away.",
+        "Encourage pairing this with polite drop cues later in the program.",
+        "Suggest journaling items the puppy guards so you can desensitize gradually."
+      ],
+      "safetyNotes": "If the puppy stiffens or growls, pause the session and refer to a trainer."
+    },
+    {
+      "id": "crate_love_2",
+      "title": "Crate Comfort Boost",
+      "objective": "Extend crate relaxation with layered rewards and calm exits.",
+      "duration": "6 min",
+      "materials": ["crate", "chew", "snuffle mat"],
+      "steps": [
+        "Cue kennel up and feed a treat just for entering.",
+        "Scatter kibble on a snuffle mat placed inside and close the door for one minute.",
+        "Return, drop three treats between the front paws, and quietly open the door.",
+        "Release only when the puppy offers eye contact, reinforcing that calm earns freedom."
+      ],
+      "supportGuidelines": [
+        "Coach guardians to alternate crate location (bedroom vs. living room) to generalize.",
+        "Encourage pairing background music or white noise for puppies sensitive to sounds.",
+        "Share the door-islands technique—open a crack, reward, close, reopen wider—to prevent dashing."
+      ],
+      "safetyNotes": "Ensure the puppy fully empties bladder before longer crate sessions."
+    }
+  ]
+}

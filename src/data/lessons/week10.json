@@ -1,48 +1,64 @@
 {
-    "id": "week10",
-    "title": "Down & Leave-It Foundations",
-    "summary": "Introduce impulse control and polite behaviour.",
-    "lessons": [
-      {
-        "id": "down_1",
-        "title": "Down 1",
-        "objective": "Puppy offers relaxed down on cue.",
-        "duration": "1–3 min",
-        "materials": ["treats", "mat"],
-        "steps": [
-          "Lure nose to floor then forward so elbows drop.",
-          "Mark and feed several treats on floor.",
-          "Add cue word after several reps."
-        ],
-        "supportGuidelines": ["If stuck: start from sit; lure slower."],
-        "safetyNotes": "Never push the puppy’s shoulders."
-      },
-      {
-        "id": "leave_it_1",
-        "title": "Leave-It 1",
-        "objective": "Teach puppy to back off from a tempting item.",
-        "duration": "1–2 min",
-        "materials": ["treats (low + high value)"],
-        "steps": [
-          "Show closed fist with treat inside; wait for puppy to back away.",
-          "Mark 'Yes' and give a different treat from other hand."
-        ],
-        "supportGuidelines": ["If nibbling hand: keep fist closed, stay still."],
-        "safetyNotes": "Never yell; reward calm choices."
-      },
-      {
-        "id": "cat_intro_1",
-        "title": "Cat Scent Intro (Optional)",
-        "objective": "Begin calm curiosity toward household cats.",
-        "duration": "few short sessions",
-        "materials": ["cat-scented cloth", "treats"],
-        "steps": [
-          "Let puppy sniff cat scent cloth; reward calm sniffing.",
-          "End before arousal or barking."
-        ],
-        "supportGuidelines": ["Keep cats separate initially; pair scent with treats."],
-        "safetyNotes": "No face-to-face meetings yet."
-      }
-    ]
-  }
-  
+  "id": "week10",
+  "title": "Down + Leave-It Foundations",
+  "summary": "Introduce impulse control games that keep bodies loose and brains curious.",
+  "lessons": [
+    {
+      "id": "down_1",
+      "title": "Relaxed Down",
+      "objective": "Teach puppies to fold into a down without pressure or leash pushing.",
+      "duration": "5 min",
+      "materials": ["treat pouch", "mat"],
+      "steps": [
+        "Lure from sit by moving a treat to the ground between the puppy's paws.",
+        "Drag the treat slowly out from their chest so elbows stretch forward.",
+        "Mark once elbows hit the mat and feed several treats while they stay down.",
+        "Add a release word and reset with a quick hand-target before repeating."
+      ],
+      "supportGuidelines": [
+        "Keep lures low; lifting causes stands instead of downs.",
+        "Reward calm breathing by feeding in place for three seconds each rep.",
+        "Encourage practicing on different mats to generalize."
+      ],
+      "safetyNotes": "If hips pop sideways dramatically, provide extra padding or switch surfaces."
+    },
+    {
+      "id": "leave_it_1",
+      "title": "Leave-It Foundations",
+      "objective": "Teach puppies to disengage from tempting items on cue.",
+      "duration": "4 min",
+      "materials": ["treats", "low-value toy"],
+      "steps": [
+        "Place a treat in your closed fist and present it at the puppy's nose.",
+        "Label leave it the moment they sniff, waiting silently for them to back off.",
+        "Mark the instant they pull away and reward from your other hand.",
+        "Progress to an open palm or toy on the floor once the fist version is solid."
+      ],
+      "supportGuidelines": [
+        "Coach handlers to avoid repeating the cue—silence is part of the lesson.",
+        "Remind them to release with take it so the puppy learns when it's okay.",
+        "Suggest practicing before walks to prep for sidewalk cleanups."
+      ],
+      "safetyNotes": "Do not try this with dangerous objects; management still matters."
+    },
+    {
+      "id": "cat_intro_1",
+      "title": "Calm Cat Intro (Optional)",
+      "objective": "Create safe, gated exposure for multi-species homes.",
+      "duration": "6 min",
+      "materials": ["baby gate", "scatter treats", "clicker"],
+      "steps": [
+        "Place the puppy on leash behind a gate with you while the cat is in view eating.",
+        "Rapid-fire feed the puppy for looking at the cat then back to you.",
+        "Add simple cues (sit, hand touch) while the cat moves slowly.",
+        "End with a calm down-stay and release the puppy away from the gate."
+      ],
+      "supportGuidelines": [
+        "Coach cat guardians to give their pet a tall escape route.",
+        "Remind families to keep leashes loose—no tightening when the cat shifts.",
+        "Encourage short, frequent sessions instead of marathon stakeouts."
+      ],
+      "safetyNotes": "Skip live cat practice if either animal is stressed; use stuffed animal rehearsals first."
+    }
+  ]
+}

@@ -1,49 +1,64 @@
 {
-    "id": "week12",
-    "title": "Leash & Calm Greetings",
-    "summary": "Introduce walking gear and polite social manners.",
-    "lessons": [
-      {
-        "id": "harness_intro",
-        "title": "Harness Intro",
-        "objective": "Puppy becomes comfortable wearing a harness.",
-        "duration": "1–3 min, multiple times",
-        "materials": ["harness", "treats"],
-        "steps": [
-          "Let puppy sniff harness; reward.",
-          "Slip harness on partially, treat, remove.",
-          "Gradually clip fully for short periods."
-        ],
-        "supportGuidelines": ["If puppy resists: break into smaller steps, go slower."],
-        "safetyNotes": "Ensure fit isn’t too tight; remove if chewing straps."
-      },
-      {
-        "id": "leash_indoors_1",
-        "title": "Indoor Leash Intro",
-        "objective": "Teach puppy to move calmly on leash indoors.",
-        "duration": "2–3 min",
-        "materials": ["harness", "light leash", "treats"],
-        "steps": [
-          "Attach leash, drop treats near you while walking slowly.",
-          "Reward when leash stays loose."
-        ],
-        "supportGuidelines": ["Keep sessions short to prevent pulling habit."],
-        "safetyNotes": "Never jerk leash; encourage following willingly."
-      },
-      {
-        "id": "calm_greetings_1",
-        "title": "Calm Greetings 1",
-        "objective": "Teach puppy to sit politely for attention.",
-        "duration": "1–2 min practice with friends/family",
-        "materials": ["treats"],
-        "steps": [
-          "Ask puppy to Sit before greeting.",
-          "Person pets only when puppy remains seated.",
-          "If jumping: withdraw attention until four paws down."
-        ],
-        "supportGuidelines": ["Train family/guests to follow same rule."],
-        "safetyNotes": "Avoid rough restraint; patience wins."
-      }
-    ]
-  }
-  
+  "id": "week12",
+  "title": "Leash & Greetings",
+  "summary": "Introduce harness gear, loose-leash patterns, and calm social scripts before the teen stage hits.",
+  "lessons": [
+    {
+      "id": "harness_intro",
+      "title": "Harness Happy Dance",
+      "objective": "Teach puppies to step into gear voluntarily.",
+      "duration": "5 min",
+      "materials": ["harness", "treats", "lick mat"],
+      "steps": [
+        "Show the harness, feed through the head hole to create a treat tunnel.",
+        "Hold the harness low; mark and reward any nose poke or paw step.",
+        "Once confident, cue through and clip while feeding continuously.",
+        "Remove harness calmly, give a short play break, and repeat."
+      ],
+      "supportGuidelines": [
+        "Coach families to avoid chasing the puppy with the harness.",
+        "Encourage pairing harness time with sniff walks so it predicts fun.",
+        "Log fit adjustments to ensure no rubbing as the puppy grows."
+      ],
+      "safetyNotes": "Check for two-finger spacing each session to prevent chafing."
+    },
+    {
+      "id": "leash_indoors_1",
+      "title": "Indoor Loose-Leash Figure Eights",
+      "objective": "Rehearse leash skills without outdoor distractions.",
+      "duration": "6 min",
+      "materials": ["flat leash", "treat pouch", "two cones or chairs"],
+      "steps": [
+        "Clip leash and stand between two cones placed eight feet apart.",
+        "Walk in a figure-eight pattern, marking every two loose steps.",
+        "When the leash tightens, plant feet and wait for slack before moving again.",
+        "Gradually speed up and slow down to teach puppies to mirror your pace."
+      ],
+      "supportGuidelines": [
+        "Coach handlers to keep hands low at the hips to avoid reeling in.",
+        "Remind them to feed at their pant seam so the puppy stays aligned.",
+        "Suggest practicing before meals to boost treat motivation."
+      ],
+      "safetyNotes": "Watch for leash chewing—swap to a tug toy if puppies get mouthy."
+    },
+    {
+      "id": "calm_greetings_1",
+      "title": "Calm Greeting Protocol",
+      "objective": "Teach puppies to sit politely before saying hi to people.",
+      "duration": "5 min",
+      "materials": ["helper person", "treat pouch", "mat"],
+      "steps": [
+        "Set the puppy on a mat facing you while the helper approaches.",
+        "Cue sit; if the puppy stays seated, allow the helper to pet briefly.",
+        "If the puppy pops up, the helper turns away while you reset and cue sit again.",
+        "Reward with treats and praise when the puppy maintains composure for three seconds."
+      ],
+      "supportGuidelines": [
+        "Coach helpers to stay calm—no squealing or fast hands.",
+        "Remind families to advocate for their puppy in public by delaying greetings until the sit happens.",
+        "Encourage journaling tough environments (lobby, park) for future field trips."
+      ],
+      "safetyNotes": "Stop the session if the puppy shows fear—switch helpers or add more distance."
+    }
+  ]
+}

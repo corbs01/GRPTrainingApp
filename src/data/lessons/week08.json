@@ -1,87 +1,102 @@
 {
-    "id": "week08",
-    "title": "Welcome Home & Bonding",
-    "summary": "Build trust, start routines, and make training fun from day one.",
-    "lessons": [
-      {
-        "id": "name_game",
-        "title": "Name Game",
-        "objective": "Puppy learns that responding to their name brings rewards.",
-        "duration": "1–3 min, 2–3× daily",
-        "materials": ["treats"],
-        "steps": [
-          "Say your puppy’s name once in a cheerful tone.",
-          "When they look at you, say 'Yes!' and give a treat.",
-          "Wait a few seconds, then repeat 5–8 times."
-        ],
-        "supportGuidelines": [
-          "If distracted: move to a quieter space.",
-          "If overexcited: shorten the session, end on a success."
-        ],
-        "safetyNotes": "Avoid repeating the name rapidly or using it for corrections."
-      },
-      {
-        "id": "crate_love_1",
-        "title": "Crate Love 1",
-        "objective": "Create positive feelings about the crate.",
-        "duration": "2–5 min, several times daily",
-        "materials": ["crate", "treats", "soft bedding"],
-        "steps": [
-          "Toss treats just inside the crate for puppy to explore.",
-          "Let them enter/exit freely, no door closing yet.",
-          "Feed dinner in crate for positive association."
-        ],
-        "supportGuidelines": [
-          "If hesitant: start with treats near the door and progress slowly."
-        ],
-        "safetyNotes": "Never force entry; the crate should always feel safe."
-      },
-      {
-        "id": "potty_routine",
-        "title": "Potty Routine",
-        "objective": "Establish consistent bathroom habits.",
-        "duration": "Ongoing daily habit",
-        "materials": ["leash", "treat pouch"],
-        "steps": [
-          "Take puppy to the same spot every 2 hours and after meals/naps.",
-          "Use cue word ('Go potty!').",
-          "Reward immediately when finished."
-        ],
-        "supportGuidelines": [
-          "If accidents indoors: quietly clean with enzyme spray, no scolding."
-        ],
-        "safetyNotes": "Supervise constantly until reliable."
-      },
-      {
-        "id": "gentle_mouth_1",
-        "title": "Gentle Mouth 1",
-        "objective": "Teach puppy to control bite pressure.",
-        "duration": "1–2 min play intervals",
-        "materials": ["toys"],
-        "steps": [
-          "Offer toy; if puppy mouths skin, say 'Ouch' softly and pause play.",
-          "Resume after a few seconds when calm."
-        ],
-        "supportGuidelines": [
-          "Redirect biting to toys before hands get involved."
-        ],
-        "safetyNotes": "Avoid rough tug with tiny puppies; protect children’s hands."
-      },
-      {
-        "id": "handling_intro",
-        "title": "Handling Intro",
-        "objective": "Desensitize puppy to gentle touch.",
-        "duration": "1 min, a few times daily",
-        "materials": [],
-        "steps": [
-          "While puppy is calm, touch ears, paws, and collar.",
-          "Feed treat after each gentle touch."
-        ],
-        "supportGuidelines": [
-          "If puppy squirms: keep sessions short and pair with treats."
-        ],
-        "safetyNotes": "Stop if puppy shows distress."
-      }
-    ]
-  }
-  
+  "id": "week08",
+  "title": "Welcome Home Rituals",
+  "summary": "Set a predictable rhythm so your puppy quickly learns that people, crates, and hands bring comfort.",
+  "lessons": [
+    {
+      "id": "name_game",
+      "title": "Name-Game Check Ins",
+      "objective": "Teach your puppy that their name predicts eye contact and rewards.",
+      "duration": "2–3 min bursts",
+      "materials": ["pea-sized treats", "quiet room"],
+      "steps": [
+        "Say the puppy's name once while they are near you and quietly wait.",
+        "Mark any head turn or eye contact with a cheerful yes and feed.",
+        "Toss a reset treat a few feet away, then repeat from different angles.",
+        "End after five solid reps to keep the game snappy."
+      ],
+      "supportGuidelines": [
+        "Coach guardians to pause after saying the name—no repeating.",
+        "Celebrate even tiny flicks of the ear to build momentum.",
+        "Suggest they log the best times of day for sharp responses."
+      ],
+      "safetyNotes": "Avoid practicing when the puppy is sound asleep or over-hungry."
+    },
+    {
+      "id": "crate_love_1",
+      "title": "Crate = Cozy Den",
+      "objective": "Create a positive first impression of alone-time space.",
+      "duration": "5 min",
+      "materials": ["crate", "soft blanket", "lick mat or stuffed Kong"],
+      "steps": [
+        "Prop the crate door open and scatter three treats just inside.",
+        "Feed the puppy for choosing to step in, then let them walk back out freely.",
+        "Offer a stuffed chew in the back corner and close the door for 10 seconds once they settle.",
+        "Open, release with a calm cue, and repeat with slightly longer door time."
+      ],
+      "supportGuidelines": [
+        "Remind humans to breathe slowly and keep voices low near the crate.",
+        "Encourage adding a worn T-shirt if the puppy is nervous.",
+        "Track the longest relaxed duration each day to show progress."
+      ],
+      "safetyNotes": "Never force a puppy inside—regress and rebuild if they freeze or vocalize."
+    },
+    {
+      "id": "potty_routine",
+      "title": "Potty Spot Routine",
+      "objective": "Create a predictable bathroom schedule and location.",
+      "duration": "5 min including walk time",
+      "materials": ["leash", "treat pouch", "potty log"],
+      "steps": [
+        "Clip on leash and walk directly to the chosen potty zone without detours.",
+        "Stand still, repeat the potty cue once, and give the puppy a full minute.",
+        "Mark success with a soft yes and feed two treats right at the spot.",
+        "Add a quick sniff walk only after the puppy finishes to reinforce the sequence."
+      ],
+      "supportGuidelines": [
+        "Have families note wake-up, meal, and play times to predict windows.",
+        "Coach them to carry the puppy out if accidents spike indoors.",
+        "Share the 3-day clean streak goal before expanding freedom."
+      ],
+      "safetyNotes": "Skip harsh cleaners outdoors; use enzyme cleaner inside to prevent re-soiling."
+    },
+    {
+      "id": "gentle_mouth_1",
+      "title": "Gentle Mouth Swaps",
+      "objective": "Redirect nippy play onto legal toys.",
+      "duration": "4 min",
+      "materials": ["two tug toys", "chew stick"],
+      "steps": [
+        "Offer a tug toy, wiggle low to the ground, and let the puppy latch on.",
+        "Say trade, present the second toy, and mark when they release the first.",
+        "Feed a treat while you hold the chew so teeth learn to land softly.",
+        "If biting escalates, calmly stand up, fold arms, and pause the game for 20 seconds."
+      ],
+      "supportGuidelines": [
+        "Coach guardians to log what textures calm their puppy fastest.",
+        "Model neutral faces—no squealing or sudden jerks.",
+        "Encourage swapping toys after two reps to prevent resource guarding."
+      ],
+      "safetyNotes": "Stop immediately if teeth graze faces or clothing strings to avoid accidental tearing."
+    },
+    {
+      "id": "handling_intro",
+      "title": "Handling Happy Hour",
+      "objective": "Pair gentle touch with rewards for future vet care.",
+      "duration": "3 min",
+      "materials": ["soft brush", "treats", "timer"],
+      "steps": [
+        "Stroke down the puppy's back once, then feed.",
+        "Touch an ear flap for one second, feed, and release.",
+        "Lift each paw briefly, tapping nails with a finger before rewarding.",
+        "Finish with a short brushstroke along the shoulders and jackpot calm breathing."
+      ],
+      "supportGuidelines": [
+        "Remind families to stop before the puppy wriggles away.",
+        "Suggest layering this on the couch or mat they relax on.",
+        "Encourage recording which body parts still feel tricky for coaching later."
+      ],
+      "safetyNotes": "Avoid tugging fur or restraining the puppy; let them step away between reps."
+    }
+  ]
+}

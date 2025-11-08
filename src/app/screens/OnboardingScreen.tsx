@@ -17,7 +17,8 @@ import { Card } from "@components/Card";
 import { ScreenContainer } from "@components/ScreenContainer";
 import { RootStackParamList } from "@app/navigation/types";
 import { useTheme } from "@theme/index";
-import { PuppySex, calculateWeekNumber, usePuppyStore } from "@state/puppyStore";
+import { PuppySex, usePuppyStore } from "@state/puppyStore";
+import { getWeekNumberFromDob } from "@lib/weekProgress";
 
 type OnboardingStep = 0 | 1 | 2;
 
@@ -53,7 +54,7 @@ export const OnboardingScreen: React.FC<Props> = ({ navigation }) => {
     if (!normalizedDob) {
       return null;
     }
-    return calculateWeekNumber(normalizedDob);
+    return getWeekNumberFromDob(normalizedDob);
   }, [normalizedDob]);
 
   const handleChange = useCallback(<K extends keyof FormState>(key: K, value: FormState[K]) => {

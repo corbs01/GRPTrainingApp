@@ -25,6 +25,8 @@ export const themeColors = {
   onPrimary: "#1F2A22",
   onSecondary: "#213037",
   onAccent: "#2B2418",
+  error: "#C85C5C",
+  onError: "#FFF8F6",
   border: "#E6D7C6",
   overlay: "rgba(47, 53, 56, 0.08)",
   success: "#9CC4A5",

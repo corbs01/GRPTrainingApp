@@ -1,0 +1,62 @@
+{
+  "id": "week21",
+  "title": "Outdoor Leash 2 & Focus Games",
+  "summary": "Polish outdoor leash skills and keep engagement lively in real-world spaces.",
+  "lessons": [
+    {
+      "id": "park_loose_leash_layers",
+      "title": "Park Loose-Leash Layers",
+      "objective": "Maintain a relaxed leash while walking past mild park distractions.",
+      "duration": "8–10 min",
+      "materials": ["flat leash", "harness", "treat pouch"],
+      "steps": [
+        "1. Warm up with 3 slow circles in a quiet corner while praising soft leash.",
+        "2. Walk parallel to distractions (benches, joggers at distance) and reward every few loose steps.",
+        "3. Add gentle figure-eights near pathways, reinforcing whenever puppy checks in.",
+        "4. Finish with a calm sniff break as a bonus for staying connected."
+      ],
+      "supportGuidelines": [
+        "Use a treat every step if leash tension creeps back in.",
+        "Shift farther from distractions before trying again after pulling."
+      ],
+      "safetyNotes": "Scan for bikes and keep leash short near pathways."
+    },
+    {
+      "id": "focus_ping_pong",
+      "title": "Outdoor Focus Ping-Pong",
+      "objective": "Build rapid name-response and eye contact despite moving stimuli.",
+      "duration": "5–6 min",
+      "materials": ["treats", "long line"],
+      "steps": [
+        "1. Stand still, say puppy’s name once, and mark/reward any head turn.",
+        "2. Toss a treat left, cue name again as puppy finishes, reward when eyes meet yours.",
+        "3. Repeat to the right, gradually adding mild park motion in the background.",
+        "4. Mix in short sits between tosses to keep the routine predictable."
+      ],
+      "supportGuidelines": [
+        "Lower tossing distance if puppy can’t reorient quickly.",
+        "Count to two before repeating the cue to avoid nagging."
+      ],
+      "safetyNotes": "Keep long line untangled and away from other park users."
+    },
+    {
+      "id": "focus_then_move_game",
+      "title": "Focus-Then-Move Game",
+      "objective": "Teach puppy to offer eye contact before earning forward motion on leash.",
+      "duration": "6–8 min",
+      "materials": ["leash", "treat pouch"],
+      "steps": [
+        "1. Stop walking, plant feet, and wait silently for puppy to glance up.",
+        "2. Mark the eye contact and take 3–5 smooth steps forward as the reward.",
+        "3. Reset whenever leash tightens, backing up two steps before offering another chance.",
+        "4. End with a cheerful release cue so the puppy knows the session is complete."
+      ],
+      "supportGuidelines": [
+        "Shorten duration if the puppy’s focus fades; quality beats length.",
+        "Add treats back in temporarily if motion reward isn’t enough."
+      ],
+      "safetyNotes": "Avoid hot pavement; pause often for water breaks."
+    }
+  ]
+}
+

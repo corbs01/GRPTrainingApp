@@ -18,6 +18,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { ScreenContainer } from "@components/ScreenContainer";
+import { Button } from "@components/Button";
 import { Illustration } from "@components/Illustration";
 import { useTheme } from "@theme/index";
 import { RootStackParamList } from "@app/navigation/types";
@@ -189,18 +190,30 @@ export const TimelineScreen: React.FC = () => {
     [navigation]
   );
 
-  React.useEffect(() => {
-    const index = data.findIndex((item) => item.weekNumber === currentWeek);
-    if (index >= 0) {
+  const scrollToWeek = React.useCallback(
+    (weekNumber: number, animated = true) => {
+      const index = data.findIndex((item) => item.weekNumber === weekNumber);
+      if (index < 0) {
+        return;
+      }
       requestAnimationFrame(() => {
         listRef.current?.scrollToIndex({
           index,
-          animated: true,
-          viewPosition: 0.5
+          animated,
+          viewPosition: orientation === "horizontal" ? 0.5 : 0
         });
       });
-    }
-  }, [currentWeek, data, orientation]);
+    },
+    [data, orientation]
+  );
+
+  React.useEffect(() => {
+    scrollToWeek(currentWeek, false);
+  }, [currentWeek, scrollToWeek]);
+
+  const handleJumpToCurrent = React.useCallback(() => {
+    scrollToWeek(currentWeek);
+  }, [currentWeek, scrollToWeek]);
 
   const getItemLayout = React.useCallback(
     (_: unknown, index: number) => ({
@@ -240,6 +253,22 @@ export const TimelineScreen: React.FC = () => {
       verticalCardWidth
     ]
   );
+
+  const nextWeekPreview = React.useMemo(() => {
+    const nextWeekNumber = Math.min(MAX_WEEK, currentWeek + 1);
+    if (nextWeekNumber === currentWeek) {
+      return null;
+    }
+    const preview = data.find((item) => item.weekNumber === nextWeekNumber);
+    if (!preview) {
+      return null;
+    }
+    const goals = preview.skills.slice(0, 3);
+    if (goals.length === 0) {
+      return null;
+    }
+    return { week: preview, goals };
+  }, [currentWeek, data]);
 
   return (
     <ScreenContainer style={styles.container}>
@@ -328,6 +357,15 @@ export const TimelineScreen: React.FC = () => {
         </View>
       </View>
 
+      <View style={[styles.jumpRow, { paddingHorizontal: theme.spacing(2) }]}>
+        <Button
+          label="Jump to current week"
+          variant="secondary"
+          fullWidth
+          onPress={handleJumpToCurrent}
+        />
+      </View>
+
       <FlatList
         ref={listRef}
         data={data}
@@ -364,6 +402,72 @@ export const TimelineScreen: React.FC = () => {
         renderItem={renderItem}
         keyExtractor={(item) => `${item.weekNumber}`}
       />
+
+      {nextWeekPreview && (
+        <View
+          style={[
+            styles.previewContainer,
+            {
+              borderColor: theme.colors.border,
+              backgroundColor: theme.colors.surface,
+              marginHorizontal: theme.spacing(2),
+              marginBottom: theme.spacing(3)
+            }
+          ]}
+        >
+          <Text
+            style={[
+              theme.typography.textVariants.title,
+              { color: theme.colors.textPrimary }
+            ]}
+          >
+            Coming up next week
+          </Text>
+          <Text
+            style={[
+              theme.typography.textVariants.body,
+              styles.previewSubtitle,
+              { color: theme.colors.textSecondary }
+            ]}
+          >
+            Week {nextWeekPreview.week.weekNumber} · {nextWeekPreview.week.title}
+          </Text>
+
+          <View style={styles.previewChipRow}>
+            {nextWeekPreview.goals.map((goal) => (
+              <View
+                key={goal}
+                style={[
+                  styles.previewChip,
+                  {
+                    borderColor: theme.colors.border,
+                    backgroundColor: theme.colors.primarySoft
+                  }
+                ]}
+              >
+                <Text
+                  style={[
+                    theme.typography.textVariants.caption,
+                    styles.previewChipTitle,
+                    { color: theme.colors.textMuted }
+                  ]}
+                >
+                  Focus peek
+                </Text>
+                <Text
+                  style={[
+                    theme.typography.textVariants.body,
+                    styles.previewChipGoal,
+                    { color: theme.colors.textPrimary }
+                  ]}
+                >
+                  {goal}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
     </ScreenContainer>
   );
 };
@@ -537,6 +641,10 @@ const styles = StyleSheet.create({
   subtitle: {
     marginTop: 8
   },
+  jumpRow: {
+    paddingTop: 16,
+    paddingBottom: 12
+  },
   toggleRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -600,5 +708,33 @@ const styles = StyleSheet.create({
   },
   footerRow: {
     marginTop: 8
+  },
+  previewContainer: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 20,
+    padding: 20
+  },
+  previewSubtitle: {
+    marginTop: 4
+  },
+  previewChipRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 16
+  },
+  previewChip: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    marginRight: 8,
+    marginBottom: 8
+  },
+  previewChipTitle: {
+    textTransform: "uppercase",
+    letterSpacing: 0.5
+  },
+  previewChipGoal: {
+    marginTop: 4
   }
 });

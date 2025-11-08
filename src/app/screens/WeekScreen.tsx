@@ -29,8 +29,18 @@ import {
 } from "@data/index";
 import { getWeekIllustrationKey } from "@data/illustrations";
 import { useTrainingStore } from "@state/trainingStore";
+import { usePractice } from "@lib/practiceLog";
+import { useLessonStepChecklist } from "@lib/dailySteps";
 
 type WeekScreenRoute = RouteProp<RootStackParamList, "Week">;
+type NoteSaveStatus = "idle" | "debouncing" | "saving" | "saved" | "error";
+type PendingNoteSave = {
+  weekId: string;
+  lessonId: string;
+  text: string;
+};
+const NOTE_DEBOUNCE_MS = 300;
+const NOTE_STATUS_RESET_MS = 2000;
 
 export const WeekScreen: React.FC = () => {
   const theme = useTheme();
@@ -51,12 +61,6 @@ export const WeekScreen: React.FC = () => {
     [resolvedWeekId]
   );
 
-  const completedLessons = useTrainingStore(
-    React.useCallback(
-      (state) => (resolvedWeekId ? state.weeks[resolvedWeekId]?.completedLessons ?? [] : []),
-      [resolvedWeekId]
-    )
-  );
   const lessonNotes = useTrainingStore(
     React.useCallback(
       (state) => (resolvedWeekId ? state.weeks[resolvedWeekId]?.lessonNotes ?? {} : {}),
@@ -64,11 +68,14 @@ export const WeekScreen: React.FC = () => {
     )
   );
   const setActiveWeek = useTrainingStore((state) => state.setActiveWeek);
-  const toggleLesson = useTrainingStore((state) => state.toggleLesson);
   const updateLessonNotes = useTrainingStore((state) => state.updateLessonNotes);
 
   const [selectedLessonId, setSelectedLessonId] = React.useState<string | null>(null);
   const [noteDraft, setNoteDraft] = React.useState<string>("");
+  const [noteStatus, setNoteStatus] = React.useState<NoteSaveStatus>("idle");
+  const saveTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const savedAckTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingSaveRef = React.useRef<PendingNoteSave | null>(null);
 
   const selectedLesson: LessonDetail | undefined = React.useMemo(() => {
     if (!selectedLessonId || !weekContent) {
@@ -89,23 +96,101 @@ export const WeekScreen: React.FC = () => {
     }
     const existing = lessonNotes[selectedLessonId] ?? "";
     setNoteDraft(existing);
+    setNoteStatus("idle");
+    pendingSaveRef.current = null;
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
+    if (savedAckTimeoutRef.current) {
+      clearTimeout(savedAckTimeoutRef.current);
+      savedAckTimeoutRef.current = null;
+    }
   }, [lessonNotes, selectedLessonId]);
 
   const handleCloseModal = React.useCallback(() => {
     setSelectedLessonId(null);
   }, []);
 
+  const flushPendingSave = React.useCallback(() => {
+    const payload = pendingSaveRef.current;
+    if (!payload) {
+      return;
+    }
+    setNoteStatus("saving");
+    try {
+      updateLessonNotes(payload.weekId, payload.lessonId, payload.text);
+      pendingSaveRef.current = null;
+      if (savedAckTimeoutRef.current) {
+        clearTimeout(savedAckTimeoutRef.current);
+      }
+      setNoteStatus("saved");
+      savedAckTimeoutRef.current = setTimeout(() => {
+        setNoteStatus("idle");
+      }, NOTE_STATUS_RESET_MS);
+    } catch {
+      setNoteStatus("error");
+    }
+  }, [updateLessonNotes]);
+
+  const queueNoteSave = React.useCallback(
+    (text: string) => {
+      if (!resolvedWeekId || !selectedLessonId) {
+        return;
+      }
+      pendingSaveRef.current = {
+        weekId: resolvedWeekId,
+        lessonId: selectedLessonId,
+        text
+      };
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      setNoteStatus("debouncing");
+      saveTimeoutRef.current = setTimeout(() => {
+        saveTimeoutRef.current = null;
+        flushPendingSave();
+      }, NOTE_DEBOUNCE_MS);
+    },
+    [resolvedWeekId, selectedLessonId, flushPendingSave]
+  );
+
   const handleNoteChange = React.useCallback(
     (text: string) => {
       setNoteDraft(text);
-      if (resolvedWeekId && selectedLessonId) {
-        updateLessonNotes(resolvedWeekId, selectedLessonId, text);
-      }
+      queueNoteSave(text);
     },
-    [resolvedWeekId, selectedLessonId, updateLessonNotes]
+    [queueNoteSave]
   );
 
-  const practicedLessonIds = completedLessons ?? [];
+  const handleRetrySave = React.useCallback(() => {
+    if (!pendingSaveRef.current && resolvedWeekId && selectedLessonId) {
+      pendingSaveRef.current = {
+        weekId: resolvedWeekId,
+        lessonId: selectedLessonId,
+        text: noteDraft
+      };
+    }
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
+    flushPendingSave();
+  }, [flushPendingSave, noteDraft, resolvedWeekId, selectedLessonId]);
+
+  React.useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      if (savedAckTimeoutRef.current) {
+        clearTimeout(savedAckTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const detailPractice = usePractice(selectedLessonId ?? "__lesson-detail__");
+
   const heroIllustrationKey = React.useMemo(
     () => getWeekIllustrationKey(weekSummary?.id ?? ""),
     [weekSummary?.id]
@@ -228,7 +313,7 @@ export const WeekScreen: React.FC = () => {
               }
             ]}
           >
-            Tap a lesson to view the full walkthrough and jot down notes.
+            Tap a lesson to get the plan and track today&apos;s work.
           </Text>
         </View>
 
@@ -237,10 +322,6 @@ export const WeekScreen: React.FC = () => {
             <LessonCard
               key={lesson.id}
               lesson={lesson}
-              practiced={practicedLessonIds.includes(lesson.id)}
-              onToggle={() => {
-                toggleLesson(resolvedWeekId, lesson.id);
-              }}
               onPress={() => setSelectedLessonId(lesson.id)}
             />
           ))}
@@ -250,15 +331,17 @@ export const WeekScreen: React.FC = () => {
       <LessonDetailModal
         visible={Boolean(selectedLesson)}
         lesson={selectedLesson}
-        practiced={selectedLesson ? practicedLessonIds.includes(selectedLesson.id) : false}
+        practiced={selectedLesson ? detailPractice.practicedToday : false}
         notes={noteDraft}
+        noteStatus={noteStatus}
         onClose={handleCloseModal}
         onTogglePractice={() => {
-          if (selectedLesson && resolvedWeekId) {
-            toggleLesson(resolvedWeekId, selectedLesson.id);
+          if (selectedLesson) {
+            detailPractice.toggle();
           }
         }}
         onChangeNotes={handleNoteChange}
+        onRetrySave={handleRetrySave}
       />
     </>
   );
@@ -281,9 +364,11 @@ type LessonDetailModalProps = {
   lesson?: LessonDetail;
   practiced: boolean;
   notes: string;
+  noteStatus: NoteSaveStatus;
   onClose: () => void;
   onTogglePractice: () => void;
   onChangeNotes: (text: string) => void;
+  onRetrySave: () => void;
 };
 
 const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
@@ -291,15 +376,74 @@ const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
   lesson,
   practiced,
   notes,
+  noteStatus,
   onClose,
   onTogglePractice,
-  onChangeNotes
+  onChangeNotes,
+  onRetrySave
 }) => {
   const theme = useTheme();
+  const [sectionsOpen, setSectionsOpen] = React.useState({
+    support: false,
+    safety: false
+  });
+
+  React.useEffect(() => {
+    setSectionsOpen({
+      support: false,
+      safety: false
+    });
+  }, [lesson?.id]);
 
   if (!lesson) {
     return null;
   }
+
+  const lessonSteps = lesson.steps ?? [];
+  const { completed, toggleStep } = useLessonStepChecklist(lesson.id, lessonSteps.length);
+
+  const renderNoteStatus = () => {
+    switch (noteStatus) {
+      case "saving":
+      case "debouncing":
+        return (
+          <Text
+            style={[
+              theme.typography.textVariants.caption,
+              { color: theme.colors.textSecondary }
+            ]}
+          >
+            Saving…
+          </Text>
+        );
+      case "saved":
+        return (
+          <Text
+            style={[
+              theme.typography.textVariants.caption,
+              { color: theme.colors.success }
+            ]}
+          >
+            Saved ✓
+          </Text>
+        );
+      case "error":
+        return (
+          <Pressable onPress={onRetrySave}>
+            <Text
+              style={[
+                theme.typography.textVariants.caption,
+                { color: theme.colors.error }
+              ]}
+            >
+              Didn&apos;t save. Tap to retry.
+            </Text>
+          </Pressable>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <Modal
@@ -416,105 +560,140 @@ const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
             ) : null}
           </View>
 
-          {lesson.steps && lesson.steps.length > 0 ? (
+          {lessonSteps.length > 0 ? (
             <View style={{ marginTop: theme.spacing(2) }}>
               <SectionTitle title="Steps" />
-              {lesson.steps.map((step, index) => (
-                <View
-                  key={`${lesson.id}-step-${index}`}
-                  style={[
-                    stylesModal.stepRow,
-                    {
-                      marginTop: index === 0 ? theme.spacing(0.75) : theme.spacing(0.5)
-                    }
-                  ]}
-                >
-                  <View
+              <Text
+                style={[
+                  theme.typography.textVariants.caption,
+                  {
+                    color: theme.colors.textMuted,
+                    marginTop: theme.spacing(0.5)
+                  }
+                ]}
+              >
+                Tap each move as you coach. Checks clear tomorrow.
+              </Text>
+              {lessonSteps.map((step, index) => {
+                const done = completed[index];
+                return (
+                  <Pressable
+                    key={`${lesson.id}-step-${index}`}
                     style={[
-                      stylesModal.stepBadge,
+                      stylesModal.stepRow,
                       {
-                        backgroundColor: theme.colors.primarySoft,
-                        borderRadius: theme.radius.pill
+                        marginTop: index === 0 ? theme.spacing(0.75) : theme.spacing(0.5)
                       }
                     ]}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: done }}
+                    onPress={() => toggleStep(index)}
                   >
-                    <Text
+                    <View
                       style={[
-                        theme.typography.textVariants.caption,
-                        { color: theme.colors.primary }
+                        stylesModal.stepBadge,
+                        {
+                          backgroundColor: done
+                            ? theme.colors.primary
+                            : theme.colors.primarySoft,
+                          borderRadius: theme.radius.pill
+                        }
                       ]}
                     >
-                      {index + 1}
+                      <Text
+                        style={[
+                          theme.typography.textVariants.caption,
+                          {
+                            color: done ? theme.colors.onPrimary : theme.colors.primary
+                          }
+                        ]}
+                      >
+                        {done ? "✓" : index + 1}
+                      </Text>
+                    </View>
+                    <Text
+                      style={[
+                        theme.typography.textVariants.body,
+                        {
+                          color: theme.colors.textPrimary,
+                          flex: 1,
+                          marginLeft: theme.spacing(1)
+                        }
+                      ]}
+                    >
+                      {step}
                     </Text>
-                  </View>
-                  <Text
-                    style={[
-                      theme.typography.textVariants.body,
-                      {
-                        color: theme.colors.textPrimary,
-                        flex: 1,
-                        marginLeft: theme.spacing(1)
-                      }
-                    ]}
-                  >
-                    {step}
-                  </Text>
-                </View>
-              ))}
+                  </Pressable>
+                );
+              })}
             </View>
           ) : null}
 
           {lesson.supportGuidelines && lesson.supportGuidelines.length > 0 ? (
             <View style={{ marginTop: theme.spacing(2) }}>
-              <SectionTitle title="What to do if..." />
-              {lesson.supportGuidelines.map((guideline, index) => (
-                <View
-                  key={`${lesson.id}-guideline-${index}`}
-                  style={[
-                    stylesModal.bulletRow,
-                    { marginTop: theme.spacing(0.75) }
-                  ]}
-                >
+              <CollapsibleSection
+                title="What to do if..."
+                open={sectionsOpen.support}
+                onToggle={() =>
+                  setSectionsOpen((prev) => ({ ...prev, support: !prev.support }))
+                }
+              >
+                {lesson.supportGuidelines.map((guideline, index) => (
                   <View
+                    key={`${lesson.id}-guideline-${index}`}
                     style={[
-                      stylesModal.bullet,
-                      {
-                        backgroundColor: theme.colors.primary,
-                        borderRadius: theme.radius.pill
-                      }
-                    ]}
-                  />
-                  <Text
-                    style={[
-                      theme.typography.textVariants.body,
-                      {
-                        color: theme.colors.textPrimary,
-                        flex: 1,
-                        marginLeft: theme.spacing(1)
-                      }
+                      stylesModal.bulletRow,
+                      { marginTop: theme.spacing(0.75) }
                     ]}
                   >
-                    {guideline}
-                  </Text>
-                </View>
-              ))}
+                    <View
+                      style={[
+                        stylesModal.bullet,
+                        {
+                          backgroundColor: theme.colors.primary,
+                          borderRadius: theme.radius.pill
+                        }
+                      ]}
+                    />
+                    <Text
+                      style={[
+                        theme.typography.textVariants.body,
+                        {
+                          color: theme.colors.textPrimary,
+                          flex: 1,
+                          marginLeft: theme.spacing(1)
+                        }
+                      ]}
+                    >
+                      {guideline}
+                    </Text>
+                  </View>
+                ))}
+              </CollapsibleSection>
             </View>
           ) : null}
 
           {lesson.safetyNotes ? (
             <View style={{ marginTop: theme.spacing(2) }}>
-              <SectionTitle title="Safety" />
-              <Text
-                style={[
-                  theme.typography.textVariants.body,
-                  {
-                    color: theme.colors.textPrimary,
-                    marginTop: theme.spacing(0.75)
-                  }
-                ]}
+              <CollapsibleSection
+                title="Safety"
+                open={sectionsOpen.safety}
+                onToggle={() =>
+                  setSectionsOpen((prev) => ({ ...prev, safety: !prev.safety }))
+                }
               >
-                {lesson.safetyNotes}
-              </Text>
+                <Text
+                  style={[
+                    theme.typography.textVariants.body,
+                    {
+                      color: theme.colors.textPrimary,
+                      marginTop: theme.spacing(0.75)
+                    }
+                  ]}
+                >
+                  {lesson.safetyNotes}
+                </Text>
+              </CollapsibleSection>
             </View>
           ) : null}
 
@@ -529,8 +708,9 @@ const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
                 }
               ]}
             >
-              Jot reminders or adjustments specific to this lesson. Notes stay on your device.
+              Drop quick reminders for today. Autosaves after a pause.
             </Text>
+            <View style={stylesModal.noteStatusRow}>{renderNoteStatus()}</View>
             <TextInput
               multiline
               placeholder="Add your notes..."
@@ -636,6 +816,44 @@ const InfoRow: React.FC<InfoRowProps> = ({ icon, label, value, containerStyle })
   );
 };
 
+type CollapsibleSectionProps = {
+  title: string;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+};
+
+const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
+  title,
+  open,
+  onToggle,
+  children
+}) => {
+  const theme = useTheme();
+  return (
+    <View>
+      <Pressable
+        accessibilityRole="button"
+        onPress={onToggle}
+        style={[
+          stylesModal.collapsibleHeader,
+          {
+            paddingVertical: theme.spacing(0.75)
+          }
+        ]}
+      >
+        <SectionTitle title={title} />
+        <Feather
+          name={open ? "chevron-up" : "chevron-down"}
+          size={18}
+          color={theme.colors.textSecondary}
+        />
+      </Pressable>
+      {open ? <View style={{ marginTop: theme.spacing(0.5) }}>{children}</View> : null}
+    </View>
+  );
+};
+
 const stylesModal = StyleSheet.create({
   container: {
     flex: 1
@@ -687,5 +905,16 @@ const stylesModal = StyleSheet.create({
     paddingVertical: 12,
     textAlignVertical: "top",
     borderWidth: StyleSheet.hairlineWidth
+  },
+  noteStatusRow: {
+    minHeight: 18,
+    justifyContent: "flex-end",
+    flexDirection: "row",
+    marginTop: 4
+  },
+  collapsibleHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
   }
 });

@@ -13,36 +13,31 @@ import { Illustration } from "./Illustration";
 import { useTheme } from "@theme/index";
 import { LessonSummary } from "@data/index";
 import { getLessonIllustrationKey } from "@data/illustrations";
+import { usePractice } from "@lib/practiceLog";
 
 type LessonCardProps = {
   lesson: LessonSummary;
-  practiced: boolean;
-  onToggle: () => void;
   onPress?: () => void;
 };
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export const LessonCard: React.FC<LessonCardProps> = ({
-  lesson,
-  practiced,
-  onToggle,
-  onPress
-}) => {
+export const LessonCard: React.FC<LessonCardProps> = ({ lesson, onPress }) => {
   const theme = useTheme();
-  const progress = useSharedValue(practiced ? 1 : 0);
+  const { practicedToday, toggle } = usePractice(lesson.id);
+  const progress = useSharedValue(practicedToday ? 1 : 0);
   const illustrationKey = React.useMemo(
     () => getLessonIllustrationKey(lesson.id),
     [lesson.id]
   );
 
   useEffect(() => {
-    progress.value = withSpring(practiced ? 1 : 0, {
+    progress.value = withSpring(practicedToday ? 1 : 0, {
       damping: 16,
       stiffness: 180,
       mass: 0.9
     });
-  }, [practiced, progress]);
+  }, [practicedToday, progress]);
 
   const backgroundStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(
@@ -81,7 +76,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
     <Card tone="subtle" padding="md" style={styles.cardOuter}>
       <AnimatedPressable
         accessibilityRole="button"
-        accessibilityState={{ checked: practiced }}
+        accessibilityState={{ checked: practicedToday }}
         accessibilityLabel={
           onPress
             ? `View details for ${lesson.title}`
@@ -92,7 +87,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
             ? "Opens lesson details. Double tap the check icon to toggle completion."
             : "Marks the lesson as practiced."
         }
-        onPress={onPress ?? onToggle}
+        onPress={onPress ?? toggle}
         style={[
           styles.row,
           {
@@ -106,12 +101,12 @@ export const LessonCard: React.FC<LessonCardProps> = ({
         <View style={styles.leftRail}>
           <Pressable
             accessibilityRole="checkbox"
-            accessibilityState={{ checked: practiced }}
+            accessibilityState={{ checked: practicedToday }}
             accessibilityLabel={`Mark ${lesson.title} as practiced`}
             hitSlop={12}
             onPress={(event) => {
               event.stopPropagation();
-              onToggle();
+              toggle();
             }}
           >
             <Animated.View
@@ -126,7 +121,7 @@ export const LessonCard: React.FC<LessonCardProps> = ({
               ]}
             >
               <Animated.View style={[styles.checkIcon, iconStyle]}>
-                <Feather name="check" size={18} color={theme.colors.onPrimary} />
+              <Feather name="check" size={18} color={theme.colors.onPrimary} />
               </Animated.View>
             </Animated.View>
           </Pressable>

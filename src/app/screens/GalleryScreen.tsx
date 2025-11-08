@@ -1,42 +1,40 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  Alert,
+  FlatList,
   Image,
   Modal,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  View
+  View,
+  useWindowDimensions
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
 import { ScreenContainer } from "@components/ScreenContainer";
 import { Button } from "@components/Button";
 import { useTheme } from "@theme/index";
-import { getAllWeeks, getWeekLessonSummaries, WeekSummary } from "@data/index";
+import { getAllWeeks, getWeekLessonSummaries } from "@data/index";
 import { useJournalStore, JournalEntry } from "@state/journalStore";
+import { deleteJournalMedia } from "@lib/media";
 
 const columns = 3;
-
-type GallerySection = {
-  key: string;
-  title: string;
-  week?: WeekSummary;
-  items: JournalEntry[];
-};
+const ITEM_GAP = 8;
 
 export const GalleryScreen: React.FC = () => {
   const theme = useTheme();
+  const { width: windowWidth } = useWindowDimensions();
   const [selectedWeek, setSelectedWeek] = useState<string | "all">("all");
+  const [selectedLesson, setSelectedLesson] = useState<string | "all">("all");
   const [activeEntry, setActiveEntry] = useState<JournalEntry | null>(null);
 
   const entries = useJournalStore((state) => state.entries);
+  const stripMediaByUri = useJournalStore((state) => state.stripMediaByUri);
 
   const weeks = useMemo(() => getAllWeeks(), []);
-  const weekMap = useMemo(
-    () => new Map(weeks.map((week) => [week.id, week])),
-    [weeks]
-  );
+  const weekMap = useMemo(() => new Map(weeks.map((week) => [week.id, week])), [weeks]);
   const lessonsLookup = useMemo(() => {
     const map = new Map<string, Map<string, string>>();
     weeks.forEach((week) => {
@@ -49,44 +47,23 @@ export const GalleryScreen: React.FC = () => {
     return map;
   }, [weeks]);
 
-  const sections = useMemo<GallerySection[]>(() => {
-    const withPhotos = entries.filter((entry) => Boolean(entry.photoUri));
-    const filtered =
-      selectedWeek === "all"
-        ? withPhotos
-        : withPhotos.filter((entry) => entry.weekId === selectedWeek);
-
-    const grouped = new Map<string, GallerySection>();
-    filtered.forEach((entry) => {
-      const week = weekMap.get(entry.weekId);
-      const key = week?.id ?? "unassigned";
-      const title = week
-        ? `Week ${week.number} • ${week.title}`
-        : "Unassigned Week";
-      const next = grouped.get(key);
-      if (next) {
-        next.items.push(entry);
-      } else {
-        grouped.set(key, {
-          key,
-          title,
-          week,
-          items: [entry]
-        });
-      }
-    });
-
-    return Array.from(grouped.values())
-      .map((section) => ({
-        ...section,
-        items: [...section.items].sort((a, b) => b.createdAt - a.createdAt)
-      }))
-      .sort((a, b) => (b.week?.number ?? 0) - (a.week?.number ?? 0));
-  }, [entries, selectedWeek, weekMap]);
+  useEffect(() => {
+    if (selectedWeek === "all") {
+      setSelectedLesson("all");
+      return;
+    }
+    if (selectedLesson === "all") {
+      return;
+    }
+    const lessonExists = lessonsLookup.get(selectedWeek)?.has(selectedLesson);
+    if (!lessonExists) {
+      setSelectedLesson("all");
+    }
+  }, [lessonsLookup, selectedLesson, selectedWeek]);
 
   const weekFilters = useMemo(
     () => [
-      { value: "all" as const, label: "All Photos" },
+      { value: "all" as const, label: "All weeks" },
       ...weeks.map((week) => ({
         value: week.id,
         label: `Week ${week.number}`
@@ -95,75 +72,120 @@ export const GalleryScreen: React.FC = () => {
     [weeks]
   );
 
-  const renderSection = (section: GallerySection) => (
-    <View key={section.key} style={styles.section}>
-      <View
-        style={[
-          styles.sectionHeader,
-          { borderColor: theme.colors.border }
-        ]}
-      >
-        <Text
-          style={[
-            styles.sectionTitle,
-            { color: theme.colors.textPrimary }
-          ]}
-        >
-          {section.title}
-        </Text>
-      </View>
-      <View style={styles.grid}>
-        {section.items.map((entry, index) => {
-          const isLastInRow = (index + 1) % columns === 0;
-          return (
-            <Pressable
-              key={entry.id}
-              onPress={() => setActiveEntry(entry)}
-              style={[
-                styles.photoTile,
-                !isLastInRow && styles.photoTileSpacing
-              ]}
-            >
-              <Image
-                source={{ uri: entry.photoUri }}
-                style={[
-                  styles.photo,
-                  { borderColor: theme.colors.border }
-                ]}
-              />
-            </Pressable>
-          );
-        })}
-      </View>
-    </View>
-  );
+  const lessonFilters = useMemo(() => {
+    if (selectedWeek === "all") {
+      return [];
+    }
+    const map = lessonsLookup.get(selectedWeek);
+    if (!map) {
+      return [];
+    }
+    return Array.from(map.entries()).map(([id, title]) => ({ id, title }));
+  }, [lessonsLookup, selectedWeek]);
 
-  const lessonTitle = (entry: JournalEntry) =>
-    entry.lessonId
-      ? lessonsLookup.get(entry.weekId)?.get(entry.lessonId)
-      : undefined;
+  const filteredEntries = useMemo(() => {
+    return entries
+      .filter((entry) => Boolean(entry.photoUri))
+      .filter((entry) => (selectedWeek === "all" ? true : entry.weekId === selectedWeek))
+      .filter((entry) => (selectedLesson === "all" ? true : entry.lessonId === selectedLesson))
+      .sort((a, b) => b.createdAt - a.createdAt);
+  }, [entries, selectedLesson, selectedWeek]);
+
+  const availableWidth = useMemo(() => Math.max(windowWidth - 40, 200), [windowWidth]);
+  const itemSize = useMemo(
+    () => (availableWidth - ITEM_GAP * (columns - 1)) / columns,
+    [availableWidth]
+  );
+  const rowHeight = itemSize + ITEM_GAP;
+
+  const lessonTitle = useCallback(
+    (entry: JournalEntry) =>
+      entry.lessonId
+        ? lessonsLookup.get(entry.weekId)?.get(entry.lessonId)
+        : undefined,
+    [lessonsLookup]
+  );
 
   const activeWeek = activeEntry ? weekMap.get(activeEntry.weekId) : undefined;
 
-  return (
-    <ScreenContainer scrollable>
-      <Text
-        style={[
-          styles.heading,
-          { color: theme.colors.textPrimary }
-        ]}
-      >
-        Gallery
-      </Text>
-      <Text
-        style={[
-          styles.body,
-          { color: theme.colors.textSecondary }
-        ]}
-      >
-        A visual scrapbook of your training journey, organized by week.
-      </Text>
+  const getItemLayout = useCallback(
+    (_: unknown, index: number) => {
+      const row = Math.floor(index / columns);
+      return {
+        length: rowHeight,
+        offset: row * rowHeight,
+        index
+      };
+    },
+    [rowHeight]
+  );
 
+  const renderItem = useCallback(
+    ({ item, index }: { item: JournalEntry; index: number }) => {
+      const isLastInRow = (index + 1) % columns === 0;
+      const sourceUri = item.thumbnailUri ?? item.photoUri;
+      if (!sourceUri) {
+        return null;
+      }
+      return (
+        <Pressable
+          onPress={() => setActiveEntry(item)}
+          style={[
+            styles.photoTile,
+            {
+              width: itemSize,
+              height: itemSize,
+              marginRight: isLastInRow ? 0 : ITEM_GAP,
+              marginBottom: ITEM_GAP
+            }
+          ]}
+        >
+          <Image
+            source={{ uri: sourceUri }}
+            style={[
+              styles.photo,
+              {
+                borderColor: theme.colors.border
+              }
+            ]}
+          />
+        </Pressable>
+      );
+    },
+    [itemSize, theme.colors.border]
+  );
+
+  const handleDeleteActivePhoto = useCallback(() => {
+    if (!activeEntry?.photoUri) {
+      return;
+    }
+    const photoUri = activeEntry.photoUri;
+    const thumbnailUri = activeEntry.thumbnailUri;
+    Alert.alert(
+      "Remove photo?",
+      "This deletes the media from every journal entry that references it.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: () => {
+            stripMediaByUri(photoUri);
+            void deleteJournalMedia(photoUri);
+            void deleteJournalMedia(thumbnailUri);
+            setActiveEntry(null);
+          }
+        }
+      ]
+    );
+  }, [activeEntry, stripMediaByUri]);
+
+  const listHeader = (
+    <View style={styles.listHeader}>
+      <Text style={[styles.heading, { color: theme.colors.textPrimary }]}>Gallery</Text>
+      <Text style={[styles.body, { color: theme.colors.textSecondary }]}>
+        A visual scrapbook of your training journey. Use filters to jump to a week or lesson.
+      </Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -178,9 +200,7 @@ export const GalleryScreen: React.FC = () => {
               style={[
                 styles.filterChip,
                 {
-                  backgroundColor: isSelected
-                    ? theme.colors.accent
-                    : theme.colors.surface,
+                  backgroundColor: isSelected ? theme.colors.accent : theme.colors.surface,
                   borderColor: theme.colors.border
                 }
               ]}
@@ -189,9 +209,7 @@ export const GalleryScreen: React.FC = () => {
                 style={[
                   styles.filterText,
                   {
-                    color: isSelected
-                      ? theme.colors.onAccent
-                      : theme.colors.textPrimary
+                    color: isSelected ? theme.colors.onAccent : theme.colors.textPrimary
                   }
                 ]}
               >
@@ -201,35 +219,97 @@ export const GalleryScreen: React.FC = () => {
           );
         })}
       </ScrollView>
+      {selectedWeek !== "all" && lessonFilters.length > 0 ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterRow}
+        >
+          <Pressable
+            key="lesson-all"
+            onPress={() => setSelectedLesson("all")}
+            style={[
+              styles.filterChip,
+              {
+                backgroundColor:
+                  selectedLesson === "all" ? theme.colors.secondary : theme.colors.surface,
+                borderColor: theme.colors.border
+              }
+            ]}
+          >
+            <Text
+              style={[
+                styles.filterText,
+                {
+                  color: selectedLesson === "all" ? theme.colors.onSecondary : theme.colors.textPrimary
+                }
+              ]}
+            >
+              All lessons
+            </Text>
+          </Pressable>
+          {lessonFilters.map((lesson) => {
+            const isSelected = selectedLesson === lesson.id;
+            return (
+              <Pressable
+                key={lesson.id}
+                onPress={() => setSelectedLesson(lesson.id)}
+                style={[
+                  styles.filterChip,
+                  {
+                    backgroundColor: isSelected ? theme.colors.secondary : theme.colors.surface,
+                    borderColor: theme.colors.border
+                  }
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.filterText,
+                    {
+                      color: isSelected ? theme.colors.onSecondary : theme.colors.textPrimary
+                    }
+                  ]}
+                >
+                  {lesson.title}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      ) : null}
+    </View>
+  );
 
-      {sections.length > 0 ? (
-        sections.map(renderSection)
-      ) : (
-        <View style={styles.emptyState}>
-          <Feather
-            name="image"
-            size={36}
-            color={theme.colors.textSecondary}
-            style={styles.emptyIcon}
-          />
-          <Text
-            style={[
-              styles.emptyHeading,
-              { color: theme.colors.textPrimary }
-            ]}
-          >
-            No photos yet
-          </Text>
-          <Text
-            style={[
-              styles.emptyBody,
-              { color: theme.colors.textSecondary }
-            ]}
-          >
-            Add a photo while creating a journal entry to build your gallery.
-          </Text>
-        </View>
-      )}
+  return (
+    <ScreenContainer>
+      <FlatList
+        data={filteredEntries}
+        numColumns={columns}
+        renderItem={renderItem}
+        style={{ flex: 1 }}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={listHeader}
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Feather
+              name="image"
+              size={36}
+              color={theme.colors.textSecondary}
+              style={styles.emptyIcon}
+            />
+            <Text style={[styles.emptyHeading, { color: theme.colors.textPrimary }]}>No photos yet</Text>
+            <Text style={[styles.emptyBody, { color: theme.colors.textSecondary }]}>
+              Add a photo while writing a journal entry to build your gallery.
+            </Text>
+          </View>
+        }
+        getItemLayout={getItemLayout}
+        initialNumToRender={18}
+        windowSize={5}
+        maxToRenderPerBatch={columns * 4}
+        removeClippedSubviews
+        contentContainerStyle={{ paddingBottom: 32, paddingTop: 12 }}
+      />
 
       <Modal
         visible={Boolean(activeEntry)}
@@ -238,72 +318,43 @@ export const GalleryScreen: React.FC = () => {
         onRequestClose={() => setActiveEntry(null)}
       >
         <View style={styles.lightboxBackdrop}>
-          <View
-            style={[
-              styles.lightboxCard,
-              { backgroundColor: theme.colors.card }
-            ]}
-          >
+          <View style={[styles.lightboxCard, { backgroundColor: theme.colors.card }]}>
             <View style={styles.lightboxHeader}>
               <View>
-                <Text
-                  style={[
-                    styles.lightboxTitle,
-                    { color: theme.colors.textPrimary }
-                  ]}
-                >
-                  {activeWeek
-                    ? `Week ${activeWeek.number}`
-                    : "Training Moment"}
+                <Text style={[styles.lightboxTitle, { color: theme.colors.textPrimary }]}>
+                  {activeWeek ? `Week ${activeWeek.number}` : "Training moment"}
                 </Text>
                 {activeEntry && (
-                  <Text
-                    style={[
-                      styles.lightboxSub,
-                      { color: theme.colors.textSecondary }
-                    ]}
-                  >
+                  <Text style={[styles.lightboxSub, { color: theme.colors.textSecondary }]}>
                     {lessonTitle(activeEntry) ?? "Captured in your journal"}
                   </Text>
                 )}
               </View>
               <Pressable onPress={() => setActiveEntry(null)} hitSlop={16}>
-                <Feather
-                  name="x"
-                  size={22}
-                  color={theme.colors.textSecondary}
-                />
+                <Feather name="x" size={22} color={theme.colors.textSecondary} />
               </Pressable>
             </View>
             {activeEntry && (
               <>
                 <Image
                   source={{ uri: activeEntry.photoUri }}
-                  style={[
-                    styles.lightboxImage,
-                    { borderColor: theme.colors.border }
-                  ]}
+                  style={[styles.lightboxImage, { borderColor: theme.colors.border }]}
                 />
-                <ScrollView
-                  style={styles.lightboxScroll}
-                  showsVerticalScrollIndicator={false}
-                >
-                  <Text
-                    style={[
-                      styles.lightboxText,
-                      { color: theme.colors.textPrimary }
-                    ]}
-                  >
+                <ScrollView style={styles.lightboxScroll} showsVerticalScrollIndicator={false}>
+                  <Text style={[styles.lightboxText, { color: theme.colors.textPrimary }]}>
                     {activeEntry.text}
                   </Text>
                 </ScrollView>
+                <Pressable
+                  onPress={handleDeleteActivePhoto}
+                  style={[styles.deleteButton, { borderColor: theme.colors.warning }]}
+                >
+                  <Feather name="trash-2" size={16} color={theme.colors.warning} style={{ marginRight: 6 }} />
+                  <Text style={[styles.deleteText, { color: theme.colors.warning }]}>Remove photo</Text>
+                </Pressable>
               </>
             )}
-            <Button
-              label="Close"
-              variant="outline"
-              onPress={() => setActiveEntry(null)}
-            />
+            <Button label="Close" variant="outline" onPress={() => setActiveEntry(null)} />
           </View>
         </View>
       </Modal>
@@ -312,19 +363,21 @@ export const GalleryScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  listHeader: {
+    marginBottom: 16
+  },
   heading: {
     fontSize: 26,
-    fontWeight: "700",
-    marginBottom: 10
+    fontWeight: "700"
   },
   body: {
     fontSize: 16,
     lineHeight: 22,
-    marginBottom: 16
+    marginTop: 8
   },
   filterRow: {
     flexDirection: "row",
-    marginBottom: 20
+    marginTop: 16
   },
   filterChip: {
     borderWidth: 1,
@@ -337,34 +390,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600"
   },
-  section: {
-    marginBottom: 24
-  },
-  sectionHeader: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    paddingBottom: 6,
-    marginBottom: 12
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600"
-  },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginRight: -8
-  },
   photoTile: {
-    width: "31%",
-    aspectRatio: 1,
-    marginBottom: 12
-  },
-  photoTileSpacing: {
-    marginRight: 8
+    borderRadius: 14,
+    overflow: "hidden"
   },
   photo: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1
   },
   emptyState: {
@@ -396,7 +428,7 @@ const styles = StyleSheet.create({
   lightboxCard: {
     borderRadius: 20,
     padding: 18,
-    maxHeight: "80%"
+    maxHeight: "85%"
   },
   lightboxHeader: {
     flexDirection: "row",
@@ -420,10 +452,23 @@ const styles = StyleSheet.create({
     marginBottom: 12
   },
   lightboxScroll: {
-    marginBottom: 16
+    marginBottom: 12
   },
   lightboxText: {
     fontSize: 15,
     lineHeight: 22
+  },
+  deleteButton: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    marginBottom: 12
+  },
+  deleteText: {
+    fontSize: 14,
+    fontWeight: "600"
   }
 });

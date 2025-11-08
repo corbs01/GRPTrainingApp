@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 import { mmkvStorage } from "@lib/index";
+import { getWeekNumberFromDob } from "@lib/weekProgress";
 
 export type PuppySex = "female" | "male" | "unsure";
 
@@ -18,25 +19,9 @@ type PuppyState = {
   setHydrated: (hydrated: boolean) => void;
   setPuppy: (profile: PuppyProfile) => void;
   updatePhoto: (photoUri: string | undefined) => void;
+  updateDob: (dobIso: string) => void;
   clearPuppy: () => void;
   getCurrentWeekNumber: () => number | null;
-};
-
-const calculateWeekNumber = (dobIso: string) => {
-  const dob = new Date(dobIso);
-  const now = new Date();
-
-  if (Number.isNaN(dob.getTime())) {
-    return null;
-  }
-
-  const diff = now.getTime() - dob.getTime();
-  if (diff < 0) {
-    return 0;
-  }
-
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  return Math.max(1, Math.floor(days / 7) + 1);
 };
 
 export const usePuppyStore = create<PuppyState>()(
@@ -63,13 +48,24 @@ export const usePuppyStore = create<PuppyState>()(
               }
             : state
         ),
+      updateDob: (dobIso) =>
+        set((state) =>
+          state.puppy
+            ? {
+                puppy: {
+                  ...state.puppy,
+                  dob: dobIso
+                }
+              }
+            : state
+        ),
       clearPuppy: () =>
         set({
           puppy: null
         }),
       getCurrentWeekNumber: () => {
         const dob = get().puppy?.dob;
-        return dob ? calculateWeekNumber(dob) : null;
+        return dob ? getWeekNumberFromDob(dob) : null;
       }
     }),
     {
@@ -84,5 +80,3 @@ export const usePuppyStore = create<PuppyState>()(
     }
   )
 );
-
-export { calculateWeekNumber };

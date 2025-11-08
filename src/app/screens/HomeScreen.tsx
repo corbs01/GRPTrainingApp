@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
@@ -6,16 +6,15 @@ import { Feather } from "@expo/vector-icons";
 
 import { ScreenContainer } from "@components/ScreenContainer";
 import { Card } from "@components/Card";
-import { LessonCard } from "@components/LessonCard";
+import { DailyPlanCard } from "@components/DailyPlanCard";
 import { useTheme } from "@theme/index";
 import { usePuppyStore } from "@state/puppyStore";
-import { useDailyPlanStore, getDailyPlanKey } from "@state/dailyPlanStore";
-import { getDefaultWeek, getLessonSummariesFromIds, getWeekByNumber, WeekSummary } from "@data/index";
+import { useDailyPlanStore, generateDailyPlan } from "@state/dailyPlanStore";
+import { getDefaultWeek, getWeekByNumber, LessonSummary, WeekSummary } from "@data/index";
 import { RootTabParamList } from "@app/navigation/types";
+import { getPracticeDateKey, usePracticeEntries } from "@lib/practiceLog";
 
 type HomeTabNavigation = BottomTabNavigationProp<RootTabParamList>;
-
-const formatDateKey = (date: Date) => date.toISOString().split("T")[0];
 
 const shortcuts: Array<{ label: string; icon: keyof typeof Feather.glyphMap; route: keyof RootTabParamList }> = [
   { label: "Journal", icon: "edit-3", route: "Journal" },
@@ -27,42 +26,43 @@ export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeTabNavigation>();
   const puppy = usePuppyStore((state) => state.puppy);
   const currentWeekNumber = usePuppyStore((state) => state.getCurrentWeekNumber());
-  const todayKey = useMemo(() => formatDateKey(new Date()), []);
-
   const weekSummary: WeekSummary | undefined = useMemo(() => {
     if (currentWeekNumber) {
       return getWeekByNumber(currentWeekNumber) ?? getDefaultWeek();
     }
     return getDefaultWeek();
   }, [currentWeekNumber]);
+  const quickAddWeekId = weekSummary?.id;
 
-  const lessonPoolIds = weekSummary?.lessonIds ?? [];
-  const ensurePlan = useDailyPlanStore((state) => state.ensurePlan);
+  const plan = useDailyPlanStore(generateDailyPlan(currentWeekNumber));
   const toggleLesson = useDailyPlanStore((state) => state.toggleLesson);
-  const plan = useDailyPlanStore(
-    React.useCallback(
-      (state) =>
-        weekSummary ? state.plans[getDailyPlanKey(weekSummary.id, todayKey)] : undefined,
-      [weekSummary, todayKey]
-    )
+  const planLessons = plan?.lessons ?? [];
+
+  const handleQuickAdd = useCallback(
+    (lesson?: LessonSummary) => {
+      navigation.navigate("Journal", {
+        quickAdd: true,
+        weekId: quickAddWeekId,
+        lessonId: lesson?.id
+      });
+    },
+    [navigation, quickAddWeekId]
   );
 
-  useEffect(() => {
-    if (weekSummary && lessonPoolIds.length > 0) {
-      ensurePlan(weekSummary.id, todayKey, lessonPoolIds);
-    }
-  }, [ensurePlan, weekSummary, todayKey, lessonPoolIds]);
+  const practiceEntries = usePracticeEntries();
+  const todayKey = React.useMemo(() => getPracticeDateKey(new Date()), []);
+  const practicedTodayIds = React.useMemo(() => {
+    const ids = new Set<string>();
+    practiceEntries.forEach((entry) => {
+      if (entry.dateKey === todayKey) {
+        ids.add(entry.lessonId);
+      }
+    });
+    return ids;
+  }, [practiceEntries, todayKey]);
 
-  const planLessons = useMemo(
-    () =>
-      weekSummary && plan
-        ? getLessonSummariesFromIds(weekSummary.id, plan.lessonIds)
-        : [],
-    [plan, weekSummary]
-  );
-
-  const practicedIds = plan?.practicedLessonIds ?? [];
-  const allPracticed = planLessons.length > 0 && practicedIds.length === planLessons.length;
+  const allPracticed =
+    planLessons.length > 0 && planLessons.every((lesson) => practicedTodayIds.has(lesson.id));
 
   const displayName = puppy?.name?.trim() || "Golden friend";
   const headerSubtitle = weekSummary
@@ -99,15 +99,15 @@ export const HomeScreen: React.FC = () => {
         <View style={{ marginTop: theme.spacing(1.5) }}>
           {planLessons.length > 0 ? (
             planLessons.map((lesson) => (
-              <LessonCard
+              <DailyPlanCard
                 key={lesson.id}
                 lesson={lesson}
-                practiced={practicedIds.includes(lesson.id)}
                 onToggle={() => {
-                  if (weekSummary) {
-                    toggleLesson(weekSummary.id, todayKey, lesson.id);
+                  if (plan) {
+                    toggleLesson(plan.weekId, plan.date, lesson.id);
                   }
                 }}
+                onQuickAdd={handleQuickAdd}
               />
             ))
           ) : (
@@ -137,7 +137,11 @@ export const HomeScreen: React.FC = () => {
           {shortcuts.map((shortcut, index) => (
             <Pressable
               key={shortcut.route}
-              onPress={() => navigation.navigate(shortcut.route)}
+              onPress={() =>
+                shortcut.route === "Journal"
+                  ? handleQuickAdd()
+                  : navigation.navigate(shortcut.route)
+              }
               style={[
                 styles.shortcut,
                 {

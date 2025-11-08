@@ -1,61 +1,83 @@
 {
-    "id": "week09",
-    "title": "First Cues & Alone Time",
-    "summary": "Begin simple cues and short independence practice.",
-    "lessons": [
-      {
-        "id": "sit",
-        "title": "Sit",
-        "objective": "Puppy learns to sit on cue.",
-        "duration": "1–3 min, 2–3× daily",
-        "materials": ["treats"],
-        "steps": [
-          "Hold treat to nose, lift slowly upward until puppy’s bottom touches ground.",
-          "Say 'Yes!' then treat.",
-          "Add cue word 'Sit' after 5–6 successes."
-        ],
-        "supportGuidelines": ["If jumping: raise treat slower or lure beside nose."],
-        "safetyNotes": "Avoid pushing on the back."
-      },
-      {
-        "id": "hand_touch",
-        "title": "Hand Touch",
-        "objective": "Teach puppy to touch your hand with their nose.",
-        "duration": "1–2 min",
-        "materials": ["treats"],
-        "steps": [
-          "Hold open palm near nose; when puppy sniffs/touches, mark 'Yes!' and treat.",
-          "Repeat 5 times per session."
-        ],
-        "supportGuidelines": ["If hesitant: smear small scent (cheese) on palm."],
-        "safetyNotes": "Keep sessions short and upbeat."
-      },
-      {
-        "id": "alone_time_1",
-        "title": "Alone Time 1",
-        "objective": "Puppy learns short comfortable separations.",
-        "duration": "1–5 min intervals",
-        "materials": ["crate or playpen", "chew toy"],
-        "steps": [
-          "Place puppy with chew, step out briefly, return before whining.",
-          "Gradually extend duration."
-        ],
-        "supportGuidelines": ["If crying: shorten next session; reward calm moments."],
-        "safetyNotes": "Never return mid-cry; wait for brief silence."
-      },
-      {
-        "id": "sound_socialization",
-        "title": "Sound Socialization",
-        "objective": "Expose puppy to gentle everyday sounds.",
-        "duration": "few minutes daily",
-        "materials": ["sound playlist", "treats"],
-        "steps": [
-          "Play quiet household noises (doorbell, vacuum) at low volume.",
-          "Reward calm behaviour."
-        ],
-        "supportGuidelines": ["Increase volume slowly over days."],
-        "safetyNotes": "Stop if signs of fear appear."
-      }
-    ]
-  }
-  
+  "id": "week09",
+  "title": "First Cues & Micro Alone Time",
+  "summary": "Blend foundational cues with tiny independence reps so confidence rises evenly.",
+  "lessons": [
+    {
+      "id": "sit",
+      "title": "Sit Anywhere",
+      "objective": "Build a default sit with minimal handler motion.",
+      "duration": "4 min",
+      "materials": ["treat pouch", "clicker or verbal marker"],
+      "steps": [
+        "Lure the puppy's nose up and back until their hips fold naturally.",
+        "Mark and reward the instant their bum hits the ground.",
+        "Fade the lure after three reps by adding only an upward hand signal.",
+        "Add tiny distractions—take a step back, wave a free hand—reinforcing quick sits."
+      ],
+      "supportGuidelines": [
+        "Coach handlers to reset position instead of repeating the cue.",
+        "Remind them to pay only the first sit, not the bounce that follows.",
+        "Log surfaces (mat, tile, grass) to keep generalization honest."
+      ],
+      "safetyNotes": "Skip slippery floors to prevent joint strain."
+    },
+    {
+      "id": "hand_touch",
+      "title": "Target Hand Touch",
+      "objective": "Teach puppies to boop a palm for redirection and leash skills.",
+      "duration": "3 min",
+      "materials": ["treats"],
+      "steps": [
+        "Present an open palm two inches from the puppy's nose.",
+        "When they investigate, mark nose-to-hand contact and reward.",
+        "Gradually move your hand to either side, reinforcing swift touches.",
+        "Layer in a verbal cue touch once the behavior is predictable."
+      ],
+      "supportGuidelines": [
+        "Encourage families to practice before opening doors or greeting guests.",
+        "Celebrate any voluntary reorientation on walks by cueing touch and rewarding heavily.",
+        "Share how this becomes the emergency recall in busy spaces."
+      ],
+      "safetyNotes": "Keep nails trimmed to avoid scratches when the puppy targets enthusiastically."
+    },
+    {
+      "id": "alone_time_1",
+      "title": "60-Second Alone Reps",
+      "objective": "Normalize short departures with a stuffed chew and predictable script.",
+      "duration": "6 min including resets",
+      "materials": ["baby gate or crate", "stuffed Kong", "timer"],
+      "steps": [
+        "Place the puppy behind a gate or inside the crate with the chew already loaded.",
+        "Leave the room for 15 seconds while monitoring quietly nearby.",
+        "Return before vocalizing escalates, drop a bonus treat, and exit again for 30 seconds.",
+        "Build to one minute only if the puppy stays relaxed on previous reps."
+      ],
+      "supportGuidelines": [
+        "Note the exact second whining begins so you can set the next departure shorter.",
+        "Coach slow exits—no fanfare—paired with breathing cues for humans.",
+        "Encourage journaling what time of day alone practice feels easiest."
+      ],
+      "safetyNotes": "Do not crate immediately after high-arousal play—add a potty break first."
+    },
+    {
+      "id": "sound_socialization",
+      "title": "Sound Socialization Mix",
+      "objective": "Create calm associations with household noises and city sound clips.",
+      "duration": "5 min",
+      "materials": ["speaker", "sound playlist", "treats"],
+      "steps": [
+        "Play a soft household sound (hair dryer recording, traffic) while feeding treats.",
+        "Increase volume one notch only if the puppy remains loose and eating.",
+        "Toss a scatter of treats away from the speaker so they move while the sound plays.",
+        "Finish by turning off the sound, cueing a sit, and paying generously."
+      ],
+      "supportGuidelines": [
+        "Send families home with the curated playlist to repeat at mealtimes.",
+        "Coach them to stay below the threshold—yawning or freezing means dial it back.",
+        "Log which real-life sounds still trigger startle so you can recreate them safely later."
+      ],
+      "safetyNotes": "Avoid live vacuum practice if the puppy is still unsure—stick to recordings first."
+    }
+  ]
+}
