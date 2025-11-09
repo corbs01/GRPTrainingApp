@@ -20,6 +20,7 @@
         "Encourage practicing on leash outside before trying off-leash spaces.",
         "Track success rate; aim for 90% indoors before moving outdoors."
       ],
+      "supportTopics": ["focus-scatter"],
       "safetyNotes": "Avoid slick floors that could cause sliding when the puppy sprints."
     },
     {
@@ -39,6 +40,7 @@
         "Encourage pairing this with polite drop cues later in the program.",
         "Suggest journaling items the puppy guards so you can desensitize gradually."
       ],
+      "supportTopics": ["biting-witching-hour", "chewing-sneak"],
       "safetyNotes": "If the puppy stiffens or growls, pause the session and refer to a trainer."
     },
     {
@@ -58,6 +60,7 @@
         "Encourage pairing background music or white noise for puppies sensitive to sounds.",
         "Share the door-islands technique—open a crack, reward, close, reopen wider—to prevent dashing."
       ],
+      "supportTopics": ["crate-protest", "alone-time-cry"],
       "safetyNotes": "Ensure the puppy fully empties bladder before longer crate sessions."
     }
   ]

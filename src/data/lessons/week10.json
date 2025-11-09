@@ -20,6 +20,7 @@
         "Reward calm breathing by feeding in place for three seconds each rep.",
         "Encourage practicing on different mats to generalize."
       ],
+      "supportTopics": ["focus-scatter", "jumping-greetings"],
       "safetyNotes": "If hips pop sideways dramatically, provide extra padding or switch surfaces."
     },
     {
@@ -39,6 +40,7 @@
         "Remind them to release with take it so the puppy learns when it's okay.",
         "Suggest practicing before walks to prep for sidewalk cleanups."
       ],
+      "supportTopics": ["chewing-sneak"],
       "safetyNotes": "Do not try this with dangerous objects; management still matters."
     },
     {
@@ -58,6 +60,7 @@
         "Remind families to keep leashes loose—no tightening when the cat shifts.",
         "Encourage short, frequent sessions instead of marathon stakeouts."
       ],
+      "supportTopics": ["multi-pet-intro", "barking-doorbell"],
       "safetyNotes": "Skip live cat practice if either animal is stressed; use stuffed animal rehearsals first."
     }
   ]

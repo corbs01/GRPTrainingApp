@@ -1,235 +1,145 @@
 {
   "categories": [
     {
-      "id": "potty",
-      "title": "Potty Routine",
-      "description": "Build spotless habits with predictable timing and clear communication.",
-      "keywords": ["potty", "bathroom", "accident", "schedule"],
+      "id": "daily-rhythm",
+      "title": "Daily Rhythm SOS",
+      "description": "Repair routines quickly when schedules wobble or confidence dips.",
+      "keywords": ["potty", "schedule", "crate", "alone", "routine", "crying", "accident"],
       "items": [
         {
-          "id": "potty-zones",
-          "title": "Choose A Zone",
-          "summary": "Pick one outdoor surface and leash-walk your puppy straight there for every break.",
-          "tips": [
-            "Use the same cue word each time so the puppy pairs words with actions.",
-            "Reward in place before heading off to sniff—the party happens at the potty spot."
+          "id": "potty-accident-reset",
+          "title": "Potty Accident Reset",
+          "summary": "Reboot the bathroom plan after surprise puddles indoors.",
+          "doNow": "Clip the leash, walk directly to the original potty zone, and reward with a rapid treat trio the instant the puppy finishes outside.",
+          "prevent": "Log wake, meal, and play times for three days so you can pre-empt breaks 10 minutes earlier than the last accident.",
+          "trainerTip": "Treat potty breaks like a mini mission—no sniff walks until after success so the cue sequence stays crystal clear.",
+          "relatedLessons": [
+            { "id": "potty_routine", "title": "Potty Spot Routine", "weekId": "week08" },
+            { "id": "crate_love_1", "title": "Crate = Cozy Den", "weekId": "week08" }
           ]
         },
         {
-          "id": "potty-log",
-          "title": "Track The Pattern",
-          "summary": "Log wake-up, meals, naps, and accidents for three days to spot predictable windows.",
-          "tips": [
-            "Set phone reminders 15 minutes after meals and play bursts.",
-            "If an accident occurs, shorten the next indoor window by 10 minutes."
+          "id": "crate-protest",
+          "title": "Crate Protest Calmer",
+          "summary": "Lower the volume when puppies bark or dig at the crate door.",
+          "doNow": "Load a lick mat, cover three crate sides, and sit nearby breathing slowly until your puppy settles, then release before they escalate again.",
+          "prevent": "Schedule crate reps after potty + play so tired bodies are ready to nap, and stick with short 2–3 minute sessions before stretching time.",
+          "trainerTip": "Alternate crate locations each day—mobility keeps puppies from pairing the crate with only bedtime separation.",
+          "relatedLessons": [
+            { "id": "crate_love_1", "title": "Crate = Cozy Den", "weekId": "week08" },
+            { "id": "crate_love_2", "title": "Crate Comfort Boost", "weekId": "week11" }
+          ]
+        },
+        {
+          "id": "alone-time-cry",
+          "title": "Alone-Time Tears",
+          "summary": "Support puppies who cry the moment you step out of sight.",
+          "doNow": "Give a stuffed chew, start a one-minute timer, and return with a calm treat drop before the first whine crests so confidence stays intact.",
+          "prevent": "Mix in decoy departures—grab keys, sit back down—to break the pattern that every cue predicts leaving.",
+          "trainerTip": "Track the exact second your puppy vocalizes so you can build a predictable ladder of easy wins before extending duration.",
+          "relatedLessons": [
+            { "id": "alone_time_1", "title": "60-Second Alone Reps", "weekId": "week09" },
+            { "id": "crate_love_2", "title": "Crate Comfort Boost", "weekId": "week11" }
           ]
         }
       ]
     },
     {
-      "id": "crate",
-      "title": "Crate Confidence",
-      "description": "Turn the crate into the chill zone your puppy runs toward.",
-      "keywords": ["crate", "kennel", "sleep", "alone"],
+      "id": "behavior-resets",
+      "title": "Behavior Resets",
+      "description": "Quick triage plans for the most common puppy SOS moments.",
+      "keywords": ["biting", "barking", "jumping", "chewing", "doorbell", "greetings"],
       "items": [
         {
-          "id": "crate-meals",
-          "title": "Dine In The Den",
-          "summary": "Feed every meal inside the crate with the door propped open for the first week.",
-          "tips": [
-            "Scatter half the kibble to encourage sniffing and lingering.",
-            "Close the door for short bursts only after the puppy finishes calmly."
+          "id": "biting-witching-hour",
+          "title": "Evening Biting Spikes",
+          "summary": "Redirect shark teeth during the pre-bed zoomie hour.",
+          "doNow": "Swap hands for a tug toy immediately, cue trade after 10 seconds, and end the game for a 20-second calm break if teeth land on skin twice.",
+          "prevent": "Schedule a sniffy walk + scatter feed before the usual witching hour so arousal is already on its way down.",
+          "trainerTip": "Narrate \"take your toy\" every time you present it—consistent language speeds up redirected grabs.",
+          "relatedLessons": [
+            { "id": "gentle_mouth_1", "title": "Gentle Mouth Swaps", "weekId": "week08" },
+            { "id": "trade_game", "title": "Trade Game", "weekId": "week11" }
           ]
         },
         {
-          "id": "crate-breathe",
-          "title": "Breathe & Leave",
-          "summary": "Practice stepping out of sight for 30 seconds while your puppy enjoys a lick mat.",
-          "tips": [
-            "Return before whining escalates so confidence stays intact.",
-            "Mix up rooms so the crate isn't tied to only nighttime."
+          "id": "barking-doorbell",
+          "title": "Doorbell Bark Plan",
+          "summary": "Lower alert barking when new sounds happen.",
+          "doNow": "Scatter 10 treats on a mat as soon as barking starts, breathe with your puppy, then cue an easy sit before opening the door again.",
+          "prevent": "Run two fake doorbell sessions daily pairing the chime with treat scatters so the bell predicts snacks, not chaos.",
+          "trainerTip": "Record and replay real household sounds at low volume during meals to keep sub-threshold exposure going.",
+          "relatedLessons": [
+            { "id": "sound_socialization", "title": "Sound Socialization Mix", "weekId": "week09" },
+            { "id": "calm_greetings_1", "title": "Calm Greeting Protocol", "weekId": "week12" }
+          ]
+        },
+        {
+          "id": "jumping-greetings",
+          "title": "Jumping Greetings",
+          "summary": "Teach four-on-the-floor manners when people walk in.",
+          "doNow": "Cue sit on a mat before the helper approaches; if paws lift, have the helper pivot away until the puppy lands back in a sit.",
+          "prevent": "Have visitors toss treats behind the puppy as they enter so spinning to chase replaces leaping straight ahead.",
+          "trainerTip": "Install a hand-target cue and use it as the first request when friends arrive—giving paws a job keeps them grounded.",
+          "relatedLessons": [
+            { "id": "sit", "title": "Sit Anywhere", "weekId": "week09" },
+            { "id": "calm_greetings_1", "title": "Calm Greeting Protocol", "weekId": "week12" }
+          ]
+        },
+        {
+          "id": "chewing-sneak",
+          "title": "Furniture Chew Patrol",
+          "summary": "Offer legal outlets before chair legs become toys.",
+          "doNow": "Leash to you, park on a mat with a tethered chew, and reward every glance back to you for five minutes.",
+          "prevent": "Rotate three textures daily and store chews out of reach so novelty stays high when you present them.",
+          "trainerTip": "Practice leave-it with real household objects on leash walks so disengaging becomes the default response.",
+          "relatedLessons": [
+            { "id": "leave_it_1", "title": "Leave-It Foundations", "weekId": "week10" },
+            { "id": "handling_intro", "title": "Handling Happy Hour", "weekId": "week08" }
           ]
         }
       ]
     },
     {
-      "id": "biting",
-      "title": "Biting & Nipping",
-      "description": "Redirect shark teeth into thoughtful play.",
-      "keywords": ["biting", "nipping", "mouthy", "play"],
+      "id": "focus-movement",
+      "title": "Focus & Movement",
+      "description": "Keep brains engaged during training, walks, and multi-pet moments.",
+      "keywords": ["focus", "zoomies", "leash", "walk", "multi-pet", "energy"],
       "items": [
         {
-          "id": "biting-toys",
-          "title": "Loaded Toy Station",
-          "summary": "Keep three textures within reach (rope, rubber, fleece) to swap in instantly when teeth land on skin.",
-          "tips": [
-            "Narrate 'take your toy' as you offer it so puppies learn the cue.",
-            "End the game for 20 seconds after two failed redirects to prevent escalation."
+          "id": "focus-scatter",
+          "title": "Can't Focus On You",
+          "summary": "Boost engagement when puppies stare at everything except their human.",
+          "doNow": "Play a 30-second name game burst, feeding any head turn toward you, then reset with a toss behind you so they choose to reorient.",
+          "prevent": "Keep sessions to five reps and end before interest dips; sprinkle surprise recall games through the day instead of marathon practices.",
+          "trainerTip": "Track the rooms or yards with the best focus so you can increase difficulty only when your puppy is ready.",
+          "relatedLessons": [
+            { "id": "name_game", "title": "Name-Game Check Ins", "weekId": "week08" },
+            { "id": "recall_1", "title": "Ping-Pong Recall", "weekId": "week11" }
           ]
         },
         {
-          "id": "biting-reset",
-          "title": "Calm Reset",
-          "summary": "Guide puppies to a mat or crate for a chew whenever arousal spikes.",
-          "tips": [
-            "Stay neutral—no scolding—so the break feels like guidance, not punishment.",
-            "Release once breathing slows and offer a calmer activity like a sniffy walk."
-          ]
-        }
-      ]
-    },
-    {
-      "id": "barking",
-      "title": "Barking",
-      "description": "Lower the volume by meeting your puppy's needs before they shout.",
-      "keywords": ["barking", "noise", "alert"],
-      "items": [
-        {
-          "id": "bark-notes",
-          "title": "Bark Journal",
-          "summary": "Note the time, trigger, and recovery for each bark session to spot patterns.",
-          "tips": [
-            "Look for energy mismatches—often barking follows long naps with no outlet.",
-            "Pair window coverings or white noise with treat scatters to preempt triggers."
+          "id": "leash-zoomies",
+          "title": "Leash Zoomies",
+          "summary": "Handle pulling and hopping at the end of the leash.",
+          "doNow": "Plant your feet the second the leash tightens, cue touch when your puppy glances back, and feed at your pant seam before moving again.",
+          "prevent": "Run two-minute figure eights indoors before every walk so muscles remember the loose-leash pattern.",
+          "trainerTip": "Pair harness time with sniff walks; if gear predicts freedom, puppies volunteer to gear up calmly.",
+          "relatedLessons": [
+            { "id": "harness_intro", "title": "Harness Happy Dance", "weekId": "week12" },
+            { "id": "leash_indoors_1", "title": "Indoor Loose-Leash Figure Eights", "weekId": "week12" }
           ]
         },
         {
-          "id": "bark-quiet",
-          "title": "Calm Interrupt",
-          "summary": "Teach a quiet cue by rewarding a single breath between barks.",
-          "tips": [
-            "Say quiet once, hold up a treat, and feed the moment barking pauses.",
-            "Practice when arousal is low before expecting it to work on doorbells."
-          ]
-        }
-      ]
-    },
-    {
-      "id": "chewing",
-      "title": "Chewing",
-      "description": "Offer legal outlets before table legs become toys.",
-      "keywords": ["chew", "teething", "destroy"],
-      "items": [
-        {
-          "id": "chew-rotation",
-          "title": "Rotate The Buffet",
-          "summary": "Swap chew textures daily so novelty stays high.",
-          "tips": [
-            "Label bins 'squeak', 'rubber', 'edible' to remember variety.",
-            "Store chews out of reach so puppies only get them when supervised."
-          ]
-        },
-        {
-          "id": "chew-stations",
-          "title": "Chew Stations",
-          "summary": "Place mats with tethered chews in each room where humans work.",
-          "tips": [
-            "Clip a lightweight leash to the mat so puppies learn to stay nearby.",
-            "Refresh the chew every 10 minutes to keep interest high."
-          ]
-        }
-      ]
-    },
-    {
-      "id": "jumping",
-      "title": "Jumping",
-      "description": "Teach four-on-the-floor manners for greetings.",
-      "keywords": ["jump", "greetings", "manners"],
-      "items": [
-        {
-          "id": "jump-mat",
-          "title": "Mat Means Pay",
-          "summary": "Cue puppies onto a mat before guests enter so they know where success happens.",
-          "tips": [
-            "Feed three treats in a row for staying seated while the door opens.",
-            "If they pop up, reset by having the guest step back outside."
-          ]
-        },
-        {
-          "id": "jump-turn",
-          "title": "Turn & Re-Try",
-          "summary": "Coach visitors to turn sideways and fold arms whenever paws leave the floor.",
-          "tips": [
-            "Only resume petting when all paws land softly.",
-            "Pair with a hand-target cue so puppies have something else to do."
-          ]
-        }
-      ]
-    },
-    {
-      "id": "leash",
-      "title": "Leash Skills",
-      "description": "Keep walks connected with games that reward slack lines.",
-      "keywords": ["leash", "walking", "pulling"],
-      "items": [
-        {
-          "id": "leash-snacks",
-          "title": "Snack At The Seam",
-          "summary": "Feed at your pant seam every few steps on new routes to remind puppies where you want them.",
-          "tips": [
-            "Set a metronome on your phone to keep timing consistent.",
-            "Use scatter treats when they return voluntarily after mild pulling."
-          ]
-        },
-        {
-          "id": "leash-turns",
-          "title": "Surprise Turns",
-          "summary": "Practice 180-degree turns indoors so puppies learn to follow and earn a reward.",
-          "tips": [
-            "Say 'this way' before pivoting to give advance notice.",
-            "Praise the second they match your turn, even if you still need to lure."
-          ]
-        }
-      ]
-    },
-    {
-      "id": "overexcitement",
-      "title": "Overexcitement",
-      "description": "Channel zoomies into structured decompression.",
-      "keywords": ["overexcited", "zoomies", "hyper"],
-      "items": [
-        {
-          "id": "zoomie-plan",
-          "title": "Zoomie Plan",
-          "summary": "Schedule play bursts right before predictable chaos (school pickup, guests).",
-          "tips": [
-            "Pair tug + sniff walks so brains and bodies tire evenly.",
-            "Create a yes zone with hurdles or tunnels so wild energy has a job."
-          ]
-        },
-        {
-          "id": "calm-mat",
-          "title": "Calm Mat Recharge",
-          "summary": "Teach puppies to settle on a mat with a stuffed chew after high-energy play.",
-          "tips": [
-            "Use a specific blanket so the cue is portable.",
-            "Feed intermittently for staying down rather than for lying down."
-          ]
-        }
-      ]
-    },
-    {
-      "id": "alone-time",
-      "title": "Alone Time",
-      "description": "Normalize solo moments so departures feel routine.",
-      "keywords": ["alone", "separation", "crate"],
-      "items": [
-        {
-          "id": "alone-ladder",
-          "title": "Separation Ladder",
-          "summary": "Chart increasing durations (30s, 1m, 2m, 5m) and only climb when your puppy breezes through twice.",
-          "tips": [
-            "Leave a camera rolling so you know the real comfort window.",
-            "Mix in false departures (keys, shoes on, no exit) to break patterns."
-          ]
-        },
-        {
-          "id": "alone-routine",
-          "title": "Exit Routine",
-          "summary": "Create a predictable script: potty, chew pre-loaded, calm departure phrase, white-noise on.",
-          "tips": [
-            "Keep arrivals equally calm so you don't spike adrenaline.",
-            "Swap chews halfway through via a helper if sessions exceed 30 minutes."
+          "id": "multi-pet-intro",
+          "title": "Other-Pet Introductions",
+          "summary": "Keep greetings with resident cats or dogs chill and safe.",
+          "doNow": "Gate the puppy, toss treats for looking at the resident pet, then cue an easy sit before releasing pressure.",
+          "prevent": "Give each species escape routes and run scent-swaps before face-to-face time so novelty drops.",
+          "trainerTip": "End while both animals are still relaxed—success is short, sweet exposure, not full play on day one.",
+          "relatedLessons": [
+            { "id": "cat_intro_1", "title": "Calm Cat Intro (Optional)", "weekId": "week10" },
+            { "id": "hand_touch", "title": "Target Hand Touch", "weekId": "week09" }
           ]
         }
       ]

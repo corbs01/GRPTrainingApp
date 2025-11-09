@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, ViewProps, ViewStyle } from "react-native";
+import { Platform, StyleSheet, View, ViewProps, ViewStyle } from "react-native";
 import Animated, { FadeInDown, Layout } from "react-native-reanimated";
 
 import { useTheme } from "@theme/index";
@@ -92,6 +92,6 @@ export const Card: React.FC<CardProps> = ({
 
 const styles = StyleSheet.create({
   base: {
-    overflow: "hidden"
+    overflow: Platform.select({ ios: "visible", default: "hidden" })
   }
 });

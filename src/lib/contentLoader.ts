@@ -14,7 +14,14 @@ export type LessonPlan = {
   materials?: string[];
   steps?: string[];
   supportGuidelines?: string[];
+  supportTopics?: string[];
   safetyNotes?: string;
+};
+
+export type SupportLessonLink = {
+  id: string;
+  title: string;
+  weekId: string;
 };
 
 export type WeekLessonsSource = {
@@ -36,7 +43,16 @@ export type SupportTip = {
   id: string;
   title: string;
   summary: string;
-  tips: string[];
+  doNow: string;
+  prevent: string;
+  trainerTip: string;
+  relatedLessons: SupportLessonLink[];
+};
+
+export type SupportItemLookup = {
+  categoryId: string;
+  categoryTitle: string;
+  item: SupportTip;
 };
 
 export type SupportCategory = {
@@ -58,6 +74,7 @@ type ContentStore = {
   lessonsByWeekId: Map<string, WeekLessonsSource>;
   supportCategories: SupportCategory[];
   supportBySlug: Map<string, SupportCategory>;
+  supportItemsById: Map<string, SupportItemRecord>;
 };
 
 type WeeksFile = {
@@ -69,6 +86,12 @@ type SupportFile = {
 };
 
 type LessonSources = Record<string, unknown>;
+
+type SupportItemRecord = {
+  categoryId: string;
+  categoryTitle: string;
+  item: SupportTip;
+};
 
 type Validator<T> = (value: unknown, errors: string[], context: string) => T | null;
 
@@ -82,7 +105,8 @@ const createEmptyStore = (): ContentStore => ({
   weeks: [],
   lessonsByWeekId: new Map(),
   supportCategories: [],
-  supportBySlug: new Map()
+  supportBySlug: new Map(),
+  supportItemsById: new Map()
 });
 
 const rawLessonSources: LessonSources = {
@@ -176,6 +200,11 @@ const validateLesson: Validator<LessonPlan> = (value, errors, context) => {
   const guidelines = asStringArray(candidate.supportGuidelines, errors, `${context} supportGuidelines`);
   if (guidelines) {
     lesson.supportGuidelines = guidelines;
+  }
+
+  const supportTopics = asStringArray(candidate.supportTopics, errors, `${context} supportTopics`);
+  if (supportTopics) {
+    lesson.supportTopics = supportTopics;
   }
 
   if (candidate.safetyNotes !== undefined) {
@@ -344,21 +373,59 @@ const validateSupportCategory: Validator<SupportCategory> = (value, errors, cont
 
     const tip = item as Record<string, unknown>;
 
-    if (!isString(tip.id) || !isString(tip.title) || !isString(tip.summary)) {
+    if (
+      !isString(tip.id) ||
+      !isString(tip.title) ||
+      !isString(tip.summary) ||
+      !isString(tip.doNow) ||
+      !isString(tip.prevent) ||
+      !isString(tip.trainerTip)
+    ) {
       errors.push(`${context} item ${index + 1} is missing required fields.`);
       return;
     }
 
-    const tips = asStringArray(tip.tips, errors, `${context} item ${index + 1} tips`);
-    if (!tips) {
+    const relatedLessonsValue = tip.relatedLessons;
+    if (!Array.isArray(relatedLessonsValue)) {
+      errors.push(`${context} item ${index + 1} relatedLessons must be an array.`);
       return;
     }
+
+    const relatedLessons: SupportLessonLink[] = [];
+    relatedLessonsValue.forEach((lesson, lessonIndex) => {
+      if (typeof lesson !== "object" || lesson === null) {
+        errors.push(
+          `${context} item ${index + 1} related lesson ${lessonIndex + 1} must be an object.`
+        );
+        return;
+      }
+      const lessonCandidate = lesson as Record<string, unknown>;
+      if (
+        !isString(lessonCandidate.id) ||
+        !isString(lessonCandidate.title) ||
+        !isString(lessonCandidate.weekId)
+      ) {
+        errors.push(
+          `${context} item ${index + 1} related lesson ${lessonIndex + 1} requires id, title, and weekId.`
+        );
+        return;
+      }
+
+      relatedLessons.push({
+        id: lessonCandidate.id.trim(),
+        title: lessonCandidate.title.trim(),
+        weekId: lessonCandidate.weekId.trim()
+      });
+    });
 
     items.push({
       id: tip.id.trim(),
       title: tip.title.trim(),
       summary: tip.summary.trim(),
-      tips
+      doNow: tip.doNow.trim(),
+      prevent: tip.prevent.trim(),
+      trainerTip: tip.trainerTip.trim(),
+      relatedLessons
     });
   });
 
@@ -407,7 +474,6 @@ const buildStore = (): { store: ContentStore; errors: string[] } => {
     }
 
     nextStore.lessonsByWeekId.set(week.id, bundle);
-
     const bundleLessonIds = new Set(bundle.lessons.map((lesson) => lesson.id));
     const missing = week.lessonIds.filter((id) => !bundleLessonIds.has(id));
     if (missing.length > 0) {
@@ -424,6 +490,13 @@ const buildStore = (): { store: ContentStore; errors: string[] } => {
       if (parsed) {
         nextStore.supportCategories.push(parsed);
         nextStore.supportBySlug.set(parsed.id, parsed);
+        parsed.items.forEach((item) => {
+          nextStore.supportItemsById.set(item.id, {
+            categoryId: parsed.id,
+            categoryTitle: parsed.title,
+            item
+          });
+        });
       }
     });
   }
@@ -510,7 +583,10 @@ export const getSupportCategories = (): SupportCategory[] =>
   store.supportCategories.map((category) => ({
     ...category,
     keywords: [...category.keywords],
-    items: category.items.map((item) => ({ ...item }))
+    items: category.items.map((item) => ({
+      ...item,
+      relatedLessons: item.relatedLessons.map((lesson) => ({ ...lesson }))
+    }))
   }));
 
 export const getSupportBySlug = (slug: string): SupportCategory | undefined => {
@@ -521,7 +597,10 @@ export const getSupportBySlug = (slug: string): SupportCategory | undefined => {
   return {
     ...category,
     keywords: [...category.keywords],
-    items: category.items.map((item) => ({ ...item }))
+    items: category.items.map((item) => ({
+      ...item,
+      relatedLessons: item.relatedLessons.map((lesson) => ({ ...lesson }))
+    }))
   };
 };
 
@@ -545,15 +624,16 @@ export const searchSupportLibrary = (query: string): SupportCategory[] => {
       }
 
       const matchingItems = category.items.filter((item) => {
-        if (item.title.toLowerCase().includes(normalizedQuery)) {
-          return true;
-        }
+        const fields = [
+          item.title,
+          item.summary,
+          item.doNow,
+          item.prevent,
+          item.trainerTip,
+          ...item.relatedLessons.map((lesson) => lesson.title)
+        ];
 
-        if (item.summary.toLowerCase().includes(normalizedQuery)) {
-          return true;
-        }
-
-        return item.tips.some((tip) => tip.toLowerCase().includes(normalizedQuery));
+        return fields.some((field) => field.toLowerCase().includes(normalizedQuery));
       });
 
       if (matchingItems.length > 0) {
@@ -566,4 +646,20 @@ export const searchSupportLibrary = (query: string): SupportCategory[] => {
       return null;
     })
     .filter((category): category is SupportCategory => Boolean(category));
+};
+
+export const getSupportItemById = (itemId: string): SupportItemLookup | undefined => {
+  const record = store.supportItemsById.get(itemId);
+  if (!record) {
+    return undefined;
+  }
+
+  return {
+    categoryId: record.categoryId,
+    categoryTitle: record.categoryTitle,
+    item: {
+      ...record.item,
+      relatedLessons: record.item.relatedLessons.map((lesson) => ({ ...lesson }))
+    }
+  };
 };

@@ -1,5 +1,12 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import Animated, {
+  Easing,
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming
+} from "react-native-reanimated";
 import { Feather } from "@expo/vector-icons";
 
 import { Illustration } from "@components/Illustration";
@@ -20,11 +27,15 @@ const CATEGORY_LABELS: Record<LessonCategory, string> = {
   socialization: "Socialization"
 };
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 export const DailyPlanCard: React.FC<DailyPlanCardProps> = ({ lesson, onToggle, onQuickAdd }) => {
   const theme = useTheme();
   const categories = React.useMemo(() => getLessonCategories(lesson.id), [lesson.id]);
   const [isPending, setIsPending] = React.useState(false);
   const { practicedToday, toggle } = usePractice(lesson.id);
+  const practiceProgress = useSharedValue(practicedToday ? 1 : 0);
+  const liftProgress = useSharedValue(0);
   const handleQuickAdd = React.useCallback(() => {
     onQuickAdd?.(lesson);
   }, [lesson, onQuickAdd]);
@@ -50,41 +61,143 @@ export const DailyPlanCard: React.FC<DailyPlanCardProps> = ({ lesson, onToggle, 
     [lesson.id]
   );
 
+  React.useEffect(() => {
+    practiceProgress.value = withTiming(practicedToday ? 1 : 0, {
+      duration: practicedToday ? 220 : 160,
+      easing: Easing.out(Easing.cubic)
+    });
+  }, [practiceProgress, practicedToday]);
+
   const circleSize = theme.spacing(3);
   const pillSpacing = theme.spacing(0.5);
+  const liftOffset = theme.spacingTokens.xs;
+
+  const cardStyle = useAnimatedStyle(() => {
+    const background = interpolateColor(
+      practiceProgress.value,
+      [0, 1],
+      [theme.colors.surface, theme.colors.primarySoft]
+    );
+    const border = interpolateColor(
+      practiceProgress.value,
+      [0, 1],
+      [theme.colors.border, theme.colors.primary]
+    );
+
+    return {
+      backgroundColor: background,
+      borderColor: border,
+      transform: [
+        { translateY: -liftOffset * liftProgress.value },
+        { scale: 1 + liftProgress.value * 0.02 }
+      ],
+      elevation: theme.shadow.soft.elevation * liftProgress.value,
+      shadowColor: theme.shadow.soft.shadowColor,
+      shadowOpacity: theme.shadow.soft.shadowOpacity * liftProgress.value,
+      shadowRadius: theme.shadow.soft.shadowRadius * liftProgress.value,
+      shadowOffset: {
+        width: theme.shadow.soft.shadowOffset.width * liftProgress.value,
+        height: theme.shadow.soft.shadowOffset.height * liftProgress.value
+      }
+    };
+  });
+
+  const checkCircleStyle = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(
+      practiceProgress.value,
+      [0, 1],
+      [theme.colors.border, theme.colors.primary]
+    ),
+    backgroundColor: interpolateColor(
+      practiceProgress.value,
+      [0, 1],
+      ["transparent", theme.colors.primary]
+    ),
+    transform: [
+      {
+        scale: 0.92 + practiceProgress.value * 0.12
+      }
+    ]
+  }));
+
+  const checkBloomStyle = useAnimatedStyle(() => ({
+    opacity: practiceProgress.value * 0.4,
+    transform: [
+      {
+        scale: 1 + practiceProgress.value * 0.45
+      }
+    ]
+  }));
+
+  const checkIconStyle = useAnimatedStyle(() => ({
+    opacity: practiceProgress.value,
+    transform: [
+      {
+        scale: 0.85 + practiceProgress.value * 0.15
+      }
+    ]
+  }));
+
+  const handlePressIn = React.useCallback(() => {
+    liftProgress.value = withTiming(1, {
+      duration: 140,
+      easing: Easing.out(Easing.quad)
+    });
+  }, [liftProgress]);
+
+  const handlePressOut = React.useCallback(() => {
+    liftProgress.value = withTiming(0, {
+      duration: 220,
+      easing: Easing.out(Easing.cubic)
+    });
+  }, [liftProgress]);
 
   return (
-    <Pressable
+    <AnimatedPressable
       accessibilityRole="button"
       accessibilityState={{ checked: practicedToday, busy: isPending }}
       accessibilityLabel={`Mark ${lesson.title} as practiced`}
       onPress={handleToggle}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      onTouchCancel={handlePressOut}
       style={[
         styles.card,
         {
-          borderRadius: theme.radius.md,
-          borderColor: theme.colors.border,
-          backgroundColor: practicedToday ? theme.colors.primarySoft : theme.colors.surface,
-          opacity: isPending ? 0.8 : 1
-        }
+          borderRadius: theme.radius.md
+        },
+        cardStyle,
+        isPending && { opacity: 0.85 }
       ]}
     >
       <View style={styles.row}>
-        <View
-          style={[
-            styles.checkCircle,
-            {
-              borderRadius: circleSize / 2,
-              width: circleSize,
-              height: circleSize,
-              borderColor: practicedToday ? theme.colors.primary : theme.colors.border,
-              backgroundColor: practicedToday ? theme.colors.primary : "transparent"
-            }
-          ]}
-        >
-          {practicedToday ? (
-            <Feather name="check" size={16} color={theme.colors.onPrimary} />
-          ) : null}
+        <View style={styles.checkWrapper}>
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              styles.checkBloom,
+              {
+                borderRadius: circleSize,
+                backgroundColor: theme.colors.primarySoft
+              },
+              checkBloomStyle
+            ]}
+          />
+          <Animated.View
+            style={[
+              styles.checkCircle,
+              {
+                borderRadius: circleSize / 2,
+                width: circleSize,
+                height: circleSize
+              },
+              checkCircleStyle
+            ]}
+          >
+            <Animated.View style={checkIconStyle}>
+              <Feather name="check" size={16} color={theme.colors.onPrimary} />
+            </Animated.View>
+          </Animated.View>
         </View>
         <View style={[styles.content, { marginLeft: theme.spacing(1) }]}>
           <View style={styles.titleRow}>
@@ -171,7 +284,7 @@ export const DailyPlanCard: React.FC<DailyPlanCardProps> = ({ lesson, onToggle, 
           </View>
         </View>
       </View>
-    </Pressable>
+    </AnimatedPressable>
   );
 };
 
@@ -186,10 +299,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start"
   },
+  checkWrapper: {
+    alignItems: "center",
+    justifyContent: "center"
+  },
   checkCircle: {
     borderWidth: StyleSheet.hairlineWidth,
     alignItems: "center",
     justifyContent: "center"
+  },
+  checkBloom: {
+    ...StyleSheet.absoluteFillObject
   },
   content: {
     flex: 1

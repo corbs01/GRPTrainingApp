@@ -16,6 +16,7 @@ type TrainingState = {
   setActiveWeek: (weekId: string) => void;
   toggleLesson: (weekId: string, lessonId: string) => void;
   updateLessonNotes: (weekId: string, lessonId: string, notes: string) => void;
+  reset: () => void;
 };
 
 const ensureWeekProgress = (
@@ -79,7 +80,12 @@ export const useTrainingStore = create<TrainingState>()(
         };
 
         set({ weeks });
-      }
+      },
+      reset: () =>
+        set({
+          activeWeekId: null,
+          weeks: {}
+        })
     }),
     {
       name: "grp-training-store",

@@ -1,6 +1,7 @@
 import type {
   LessonPlan,
   SupportCategory as LoaderSupportCategory,
+  SupportItemLookup as LoaderSupportItemLookup,
   SupportTip as LoaderSupportTip,
   WeekContent
 } from "@lib/contentLoader";
@@ -9,6 +10,7 @@ import {
   getLessonBundle,
   getLessons as loaderGetLessons,
   getLessonsByWeekId,
+  getSupportItemById as loaderGetSupportItemById,
   getSupportBySlug as loaderGetSupportBySlug,
   getSupportCategories as loaderGetSupportCategories,
   getWeek as loaderGetWeek,
@@ -23,6 +25,7 @@ export type LessonDetail = LessonPlan;
 export type LessonSummary = Pick<LessonPlan, "id" | "title" | "objective" | "duration">;
 export type SupportTip = LoaderSupportTip;
 export type SupportCategory = LoaderSupportCategory;
+export type SupportItemLookup = LoaderSupportItemLookup;
 
 export type WeekLessonContent = {
   id: string;
@@ -92,6 +95,9 @@ export const getSupportCategories = (): SupportCategory[] => loaderGetSupportCat
 
 export const getSupportBySlug = (slug: string): SupportCategory | undefined =>
   loaderGetSupportBySlug(slug);
+
+export const getSupportItemById = (itemId: string): SupportItemLookup | undefined =>
+  loaderGetSupportItemById(itemId);
 
 export const searchSupportLibrary = (query: string): SupportCategory[] =>
   loaderSearchSupportLibrary(query);

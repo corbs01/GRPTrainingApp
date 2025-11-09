@@ -4,14 +4,18 @@ export const palette = {
   mistBlue: "#C6DAE6",
   sand: "#E8D3B9",
   charcoal: "#2F3538",
+  deepCharcoal: "#1F2224",
   cream: "#FFFBF4",
   softSage: "#D8E6CF",
   softMist: "#DCE9F1",
+  twilight: "#384245",
+  midnight: "#1B1E1F",
   warmHighlight: "#F9E2C3",
+  blush: "#F4DDE1",
   white: "#FFFFFF"
 } as const;
 
-export const themeColors = {
+export const themeColorsLight = {
   background: palette.pastelBeige,
   surface: palette.cream,
   card: palette.cream,
@@ -31,4 +35,26 @@ export const themeColors = {
   overlay: "rgba(47, 53, 56, 0.08)",
   success: "#9CC4A5",
   warning: "#E6C188"
+} as const;
+
+export const themeColorsDark = {
+  background: palette.midnight,
+  surface: palette.twilight,
+  card: palette.twilight,
+  primary: "#7CA08B",
+  primarySoft: "#4C5C54",
+  secondary: "#5A7486",
+  accent: "#C9A987",
+  textPrimary: palette.cream,
+  textSecondary: "#BAC3C7",
+  textMuted: "#8E989C",
+  onPrimary: palette.deepCharcoal,
+  onSecondary: palette.cream,
+  onAccent: palette.deepCharcoal,
+  error: "#E18B8B",
+  onError: "#1B1E1F",
+  border: "#3E4749",
+  overlay: "rgba(255,255,255,0.08)",
+  success: "#9CC4A5",
+  warning: "#F3C89B"
 } as const;

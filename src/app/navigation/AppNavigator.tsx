@@ -13,7 +13,10 @@ import {
   GalleryScreen,
   SupportScreen,
   SettingsScreen,
-  OnboardingScreen
+  OnboardingScreen,
+  EditPuppyProfile,
+  PrivacyModal,
+  FeedbackModal
 } from "@app/screens";
 import { useTheme } from "@theme/index";
 import { usePuppyStore } from "@state/puppyStore";
@@ -105,6 +108,29 @@ export const AppNavigator = () => {
         />
         <Stack.Screen name="RootTabs" component={TabNavigator} options={{ headerShown: false }} />
         <Stack.Screen name="Week" component={WeekScreen} options={{ title: "Training Week" }} />
+        <Stack.Screen
+          name="EditPuppyProfile"
+          component={EditPuppyProfile}
+          options={{
+            title: "Edit Puppy Profile"
+          }}
+        />
+        <Stack.Screen
+          name="PrivacyModal"
+          component={PrivacyModal}
+          options={{
+            title: "Privacy & Data",
+            presentation: "modal"
+          }}
+        />
+        <Stack.Screen
+          name="FeedbackModal"
+          component={FeedbackModal}
+          options={{
+            title: "Feedback",
+            presentation: "modal"
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

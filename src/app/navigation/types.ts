@@ -1,3 +1,5 @@
+import { NavigatorScreenParams } from "@react-navigation/native";
+
 export type RootTabParamList = {
   Home: undefined;
   Timeline: undefined;
@@ -9,14 +11,22 @@ export type RootTabParamList = {
       }
     | undefined;
   Gallery: undefined;
-  Support: undefined;
+  Support:
+    | {
+        focusSupportId?: string;
+      }
+    | undefined;
   Settings: undefined;
 };
 
 export type RootStackParamList = {
-  RootTabs: undefined;
+  RootTabs: NavigatorScreenParams<RootTabParamList> | undefined;
   Week: {
     weekId: string;
+    lessonId?: string;
   };
   Onboarding: undefined;
+  EditPuppyProfile: undefined;
+  PrivacyModal: undefined;
+  FeedbackModal: undefined;
 };

@@ -31,6 +31,7 @@ type DailyPlanState = {
   lastShownByWeek: Record<string, string>;
   ensurePlan: (weekId: string, date: string, lessonPool: string[]) => DailyPlan;
   toggleLesson: (weekId: string, date: string, lessonId: string) => void;
+  reset: () => void;
 };
 
 const dailyPlanKey = (weekId: string, date: string): DailyPlanKey => `${weekId}:${date}`;
@@ -159,7 +160,13 @@ export const useDailyPlanStore = create<DailyPlanState>()(
           },
           lessonEngagement: nextEngagement
         }));
-      }
+      },
+      reset: () =>
+        set({
+          plans: {},
+          lessonEngagement: {},
+          lastShownByWeek: {}
+        })
     }),
     {
       name: "grp-daily-plan-store",

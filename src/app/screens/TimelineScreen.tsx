@@ -10,9 +10,12 @@ import {
   useWindowDimensions
 } from "react-native";
 import Animated, {
+  Easing,
   useAnimatedStyle,
   useSharedValue,
-  withSpring
+  withSequence,
+  withSpring,
+  withTiming
 } from "react-native-reanimated";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -21,6 +24,7 @@ import { ScreenContainer } from "@components/ScreenContainer";
 import { Button } from "@components/Button";
 import { Illustration } from "@components/Illustration";
 import { useTheme } from "@theme/index";
+import type { AppTheme } from "@theme/theme";
 import { RootStackParamList } from "@app/navigation/types";
 import { getAllWeeks, getWeekLessonSummaries, WeekSummary } from "@data/index";
 import { getWeekIllustrationKey } from "@data/illustrations";
@@ -129,6 +133,7 @@ export const TimelineScreen: React.FC = () => {
   const [orientation, setOrientation] = React.useState<TimelineOrientation>("horizontal");
   const [data] = React.useState<TimelineMilestone[]>(() => generateTimelineData(getAllWeeks()));
   const listRef = React.useRef<FlatList<TimelineMilestone>>(null);
+  const pageTurn = useSharedValue(0);
   const cardThemeValues = React.useMemo(
     () => ({
       card: theme.colors.card,
@@ -142,7 +147,10 @@ export const TimelineScreen: React.FC = () => {
       button: theme.typography.textVariants.button,
       body: theme.typography.textVariants.body,
       caption: theme.typography.textVariants.caption,
-      title: theme.typography.textVariants.title
+      title: theme.typography.textVariants.title,
+      liftOffset: theme.spacingTokens.xs,
+      shadowSoft: theme.shadow.soft,
+      shadowLifted: theme.shadow.lifted
     }),
     [
       theme.colors.accent,
@@ -156,9 +164,29 @@ export const TimelineScreen: React.FC = () => {
       theme.typography.textVariants.body,
       theme.typography.textVariants.button,
       theme.typography.textVariants.caption,
-      theme.typography.textVariants.title
+      theme.typography.textVariants.title,
+      theme.shadow.soft,
+      theme.shadow.lifted,
+      theme.spacingTokens.xs
     ]
   );
+
+  React.useEffect(() => {
+    pageTurn.value = 0;
+    pageTurn.value = withSequence(
+      withTiming(1, { duration: 160, easing: Easing.out(Easing.cubic) }),
+      withTiming(0, { duration: 220, easing: Easing.out(Easing.cubic) })
+    );
+  }, [orientation, pageTurn]);
+
+  const pageTurnStyle = useAnimatedStyle(() => ({
+    transform: [
+      { perspective: 1000 },
+      { rotateY: `${pageTurn.value * 8}deg` },
+      { scale: 1 - pageTurn.value * 0.02 }
+    ],
+    opacity: 0.96 + (1 - pageTurn.value) * 0.04
+  }));
 
   const rawCurrentWeek = usePuppyStore((state) => state.getCurrentWeekNumber());
   const currentWeek = React.useMemo(() => {
@@ -366,42 +394,44 @@ export const TimelineScreen: React.FC = () => {
         />
       </View>
 
-      <FlatList
-        ref={listRef}
-        data={data}
-        key={orientation}
-        horizontal={orientation === "horizontal"}
-        showsHorizontalScrollIndicator={false}
-        showsVerticalScrollIndicator={false}
-        ItemSeparatorComponent={() =>
-          orientation === "horizontal" ? (
-            <View style={{ width: cardGap }} />
-          ) : (
-            <View style={{ height: cardGap }} />
-          )
-        }
-        snapToInterval={snapInterval}
-        snapToAlignment="start"
-        decelerationRate="fast"
-        getItemLayout={getItemLayout}
-        onScrollToIndexFailed={(info) => {
-          requestAnimationFrame(() => {
-            listRef.current?.scrollToOffset({
-              offset: info.index * snapInterval,
-              animated: true
-            });
-          });
-        }}
-        contentContainerStyle={[
-          styles.listContent,
-          {
-            paddingVertical: theme.spacing(3),
-            paddingHorizontal: orientation === "horizontal" ? theme.spacing(1) : 0
+      <Animated.View style={[styles.listWrapper, pageTurnStyle]}>
+        <FlatList
+          ref={listRef}
+          data={data}
+          key={orientation}
+          horizontal={orientation === "horizontal"}
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
+          ItemSeparatorComponent={() =>
+            orientation === "horizontal" ? (
+              <View style={{ width: cardGap }} />
+            ) : (
+              <View style={{ height: cardGap }} />
+            )
           }
-        ]}
-        renderItem={renderItem}
-        keyExtractor={(item) => `${item.weekNumber}`}
-      />
+          snapToInterval={snapInterval}
+          snapToAlignment="start"
+          decelerationRate="fast"
+          getItemLayout={getItemLayout}
+          onScrollToIndexFailed={(info) => {
+            requestAnimationFrame(() => {
+              listRef.current?.scrollToOffset({
+                offset: info.index * snapInterval,
+                animated: true
+              });
+            });
+          }}
+          contentContainerStyle={[
+            styles.listContent,
+            {
+              paddingVertical: theme.spacing(3),
+              paddingHorizontal: orientation === "horizontal" ? theme.spacing(1) : 0
+            }
+          ]}
+          renderItem={renderItem}
+          keyExtractor={(item) => `${item.weekNumber}`}
+        />
+      </Animated.View>
 
       {nextWeekPreview && (
         <View
@@ -472,6 +502,8 @@ export const TimelineScreen: React.FC = () => {
   );
 };
 
+type ShadowSpec = AppTheme["shadow"][keyof AppTheme["shadow"]];
+
 type TimelineCardThemeValues = {
   card: string;
   border: string;
@@ -485,6 +517,9 @@ type TimelineCardThemeValues = {
   body: TextStyle;
   caption: TextStyle;
   title: TextStyle;
+  liftOffset: number;
+  shadowSoft: ShadowSpec;
+  shadowLifted: ShadowSpec;
 };
 
 type TimelineMilestoneCardProps = {
@@ -497,10 +532,12 @@ type TimelineMilestoneCardProps = {
 };
 
 const AnimatedCardContainer = Animated.createAnimatedComponent(View);
+const AnimatedPressableCard = Animated.createAnimatedComponent(Pressable);
 
 const TimelineMilestoneCard: React.FC<TimelineMilestoneCardProps> = React.memo(
   ({ milestone, isCurrent, isAvailable, dimensions, onPress, themeValues }) => {
     const scale = useSharedValue(isCurrent ? 1 : 0.97);
+    const pressProgress = useSharedValue(0);
 
     React.useEffect(() => {
       scale.value = withSpring(isCurrent ? 1 : 0.97, {
@@ -510,9 +547,70 @@ const TimelineMilestoneCard: React.FC<TimelineMilestoneCardProps> = React.memo(
       });
     }, [isCurrent, scale]);
 
+    React.useEffect(() => {
+      if (!isAvailable) {
+        pressProgress.value = 0;
+      }
+    }, [isAvailable, pressProgress]);
+
     const animatedStyle = useAnimatedStyle(() => ({
       transform: [{ scale: scale.value }]
     }));
+
+    const cardLiftStyle = useAnimatedStyle(
+      () => {
+        const t = pressProgress.value;
+        const opacity = isAvailable ? 0.94 + 0.06 * (1 - t) : 0.6;
+
+        return {
+          opacity,
+          transform: [
+            { translateY: -themeValues.liftOffset * t },
+            { scale: 1 + t * 0.015 }
+          ],
+          elevation:
+            themeValues.shadowSoft.elevation +
+            (themeValues.shadowLifted.elevation - themeValues.shadowSoft.elevation) * t,
+          shadowColor: themeValues.shadowLifted.shadowColor,
+          shadowOpacity:
+            themeValues.shadowSoft.shadowOpacity +
+            (themeValues.shadowLifted.shadowOpacity - themeValues.shadowSoft.shadowOpacity) * t,
+          shadowRadius:
+            themeValues.shadowSoft.shadowRadius +
+            (themeValues.shadowLifted.shadowRadius - themeValues.shadowSoft.shadowRadius) * t,
+          shadowOffset: {
+            width:
+              themeValues.shadowSoft.shadowOffset.width +
+              (themeValues.shadowLifted.shadowOffset.width -
+                themeValues.shadowSoft.shadowOffset.width) *
+                t,
+            height:
+              themeValues.shadowSoft.shadowOffset.height +
+              (themeValues.shadowLifted.shadowOffset.height -
+                themeValues.shadowSoft.shadowOffset.height) *
+                t
+          }
+        };
+      },
+      [isAvailable, themeValues]
+    );
+
+    const handlePressIn = React.useCallback(() => {
+      if (!isAvailable) {
+        return;
+      }
+      pressProgress.value = withTiming(1, {
+        duration: 140,
+        easing: Easing.out(Easing.quad)
+      });
+    }, [isAvailable, pressProgress]);
+
+    const handlePressOut = React.useCallback(() => {
+      pressProgress.value = withTiming(0, {
+        duration: 220,
+        easing: Easing.out(Easing.cubic)
+      });
+    }, [pressProgress]);
 
     const artSize = React.useMemo(
       () => Math.min(dimensions.width * 0.55, 140),
@@ -530,18 +628,21 @@ const TimelineMilestoneCard: React.FC<TimelineMilestoneCardProps> = React.memo(
           animatedStyle
         ]}
       >
-        <Pressable
+        <AnimatedPressableCard
           onPress={onPress}
           disabled={!isAvailable}
-          style={({ pressed }) => [
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          onTouchCancel={handlePressOut}
+          style={[
             styles.card,
             {
               borderColor: isCurrent ? themeValues.accent : themeValues.border,
               borderWidth: isCurrent ? 2 : StyleSheet.hairlineWidth,
-              backgroundColor: themeValues.card,
-              opacity: pressed ? 0.95 : 1
+              backgroundColor: themeValues.card
             },
-            !isAvailable && styles.cardDisabled
+            !isAvailable && styles.cardDisabled,
+            cardLiftStyle
           ]}
         >
           <View
@@ -624,7 +725,7 @@ const TimelineMilestoneCard: React.FC<TimelineMilestoneCardProps> = React.memo(
               {isAvailable ? "Go to week" : "Coming soon"}
             </Text>
           </View>
-        </Pressable>
+        </AnimatedPressableCard>
       </AnimatedCardContainer>
     );
   }
@@ -665,6 +766,9 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 24,
     paddingHorizontal: 20
+  },
+  listWrapper: {
+    flexGrow: 1
   },
   cardContainer: {
     flexShrink: 0

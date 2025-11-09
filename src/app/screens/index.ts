@@ -6,3 +6,6 @@ export * from "./GalleryScreen";
 export * from "./SupportScreen";
 export * from "./SettingsScreen";
 export * from "./OnboardingScreen";
+export * from "./EditPuppyProfile";
+export * from "./PrivacyModal";
+export * from "./FeedbackModal";

@@ -20,6 +20,7 @@
         "Remind them to pay only the first sit, not the bounce that follows.",
         "Log surfaces (mat, tile, grass) to keep generalization honest."
       ],
+      "supportTopics": ["jumping-greetings", "focus-scatter"],
       "safetyNotes": "Skip slippery floors to prevent joint strain."
     },
     {
@@ -39,6 +40,7 @@
         "Celebrate any voluntary reorientation on walks by cueing touch and rewarding heavily.",
         "Share how this becomes the emergency recall in busy spaces."
       ],
+      "supportTopics": ["focus-scatter", "leash-zoomies"],
       "safetyNotes": "Keep nails trimmed to avoid scratches when the puppy targets enthusiastically."
     },
     {
@@ -58,6 +60,7 @@
         "Coach slow exits—no fanfare—paired with breathing cues for humans.",
         "Encourage journaling what time of day alone practice feels easiest."
       ],
+      "supportTopics": ["alone-time-cry", "crate-protest"],
       "safetyNotes": "Do not crate immediately after high-arousal play—add a potty break first."
     },
     {
@@ -77,6 +80,7 @@
         "Coach them to stay below the threshold—yawning or freezing means dial it back.",
         "Log which real-life sounds still trigger startle so you can recreate them safely later."
       ],
+      "supportTopics": ["barking-doorbell", "focus-scatter"],
       "safetyNotes": "Avoid live vacuum practice if the puppy is still unsure—stick to recordings first."
     }
   ]

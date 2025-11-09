@@ -20,6 +20,7 @@
         "Celebrate even tiny flicks of the ear to build momentum.",
         "Suggest they log the best times of day for sharp responses."
       ],
+      "supportTopics": ["focus-scatter"],
       "safetyNotes": "Avoid practicing when the puppy is sound asleep or over-hungry."
     },
     {
@@ -39,6 +40,7 @@
         "Encourage adding a worn T-shirt if the puppy is nervous.",
         "Track the longest relaxed duration each day to show progress."
       ],
+      "supportTopics": ["crate-protest", "alone-time-cry"],
       "safetyNotes": "Never force a puppy inside—regress and rebuild if they freeze or vocalize."
     },
     {
@@ -58,6 +60,7 @@
         "Coach them to carry the puppy out if accidents spike indoors.",
         "Share the 3-day clean streak goal before expanding freedom."
       ],
+      "supportTopics": ["potty-accident-reset"],
       "safetyNotes": "Skip harsh cleaners outdoors; use enzyme cleaner inside to prevent re-soiling."
     },
     {
@@ -77,6 +80,7 @@
         "Model neutral faces—no squealing or sudden jerks.",
         "Encourage swapping toys after two reps to prevent resource guarding."
       ],
+      "supportTopics": ["biting-witching-hour"],
       "safetyNotes": "Stop immediately if teeth graze faces or clothing strings to avoid accidental tearing."
     },
     {
@@ -96,6 +100,7 @@
         "Suggest layering this on the couch or mat they relax on.",
         "Encourage recording which body parts still feel tricky for coaching later."
       ],
+      "supportTopics": ["chewing-sneak"],
       "safetyNotes": "Avoid tugging fur or restraining the puppy; let them step away between reps."
     }
   ]

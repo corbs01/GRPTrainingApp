@@ -4,9 +4,9 @@ import { Image, ImageStyle, StyleSheet, View, ViewStyle, StyleProp } from "react
 import {
   getIllustrationSource,
   IllustrationKey,
-  ILLUSTRATION_FALLBACK,
-  isIllustrationKey
+  resolveIllustrationKey
 } from "@lib/illustrations";
+import { useTheme } from "@theme/index";
 
 type IllustrationProps = {
   name?: IllustrationKey | string | null;
@@ -29,22 +29,25 @@ export const Illustration: React.FC<IllustrationProps> = ({
   rounded = true,
   backgroundColor
 }) => {
-  const resolvedKey = React.useMemo<IllustrationKey>(
-    () => (name && isIllustrationKey(name) ? name : ILLUSTRATION_FALLBACK),
-    [name]
-  );
+  const theme = useTheme();
+  const resolvedKey = React.useMemo<IllustrationKey>(() => resolveIllustrationKey(name), [name]);
 
   const source = React.useMemo(() => getIllustrationSource(resolvedKey), [resolvedKey]);
+  const resolvedBackground = backgroundColor ?? theme.palette.softMist;
+  const borderRadius = React.useMemo(
+    () => (rounded ? Math.max(theme.radius.md, size / 3) : theme.radius.xs),
+    [rounded, size, theme.radius.md, theme.radius.xs]
+  );
 
   return (
     <View
       style={[
         styles.container,
-        rounded ? { borderRadius: size / 3 } : null,
+        { borderRadius },
         {
           width: size,
           height: size,
-          backgroundColor
+          backgroundColor: resolvedBackground
         },
         style
       ]}
@@ -54,7 +57,7 @@ export const Illustration: React.FC<IllustrationProps> = ({
         resizeMode="cover"
         style={[
           styles.image,
-          rounded ? { borderRadius: size / 3 } : null,
+          { borderRadius },
           {
             width: size,
             height: size

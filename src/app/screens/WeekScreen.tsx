@@ -11,8 +11,9 @@ import {
   View,
   ViewStyle
 } from "react-native";
-import { RouteProp, useRoute } from "@react-navigation/native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { ScreenContainer } from "@components/ScreenContainer";
 import { Card } from "@components/Card";
@@ -22,6 +23,7 @@ import { useTheme } from "@theme/index";
 import { RootStackParamList } from "@app/navigation/types";
 import {
   getDefaultWeek,
+  getSupportItemById,
   getWeekById,
   getWeekLessonContent,
   LessonDetail,
@@ -33,6 +35,7 @@ import { usePractice } from "@lib/practiceLog";
 import { useLessonStepChecklist } from "@lib/dailySteps";
 
 type WeekScreenRoute = RouteProp<RootStackParamList, "Week">;
+type WeekScreenNavigation = NativeStackNavigationProp<RootStackParamList>;
 type NoteSaveStatus = "idle" | "debouncing" | "saving" | "saved" | "error";
 type PendingNoteSave = {
   weekId: string;
@@ -45,6 +48,7 @@ const NOTE_STATUS_RESET_MS = 2000;
 export const WeekScreen: React.FC = () => {
   const theme = useTheme();
   const route = useRoute<WeekScreenRoute>();
+  const navigation = useNavigation<WeekScreenNavigation>();
   const requestedWeekId = route.params?.weekId;
 
   const weekSummary = React.useMemo(() => {
@@ -60,6 +64,17 @@ export const WeekScreen: React.FC = () => {
     () => (resolvedWeekId ? getWeekLessonContent(resolvedWeekId) : undefined),
     [resolvedWeekId]
   );
+
+  React.useEffect(() => {
+    const targetLessonId = route.params?.lessonId;
+    if (!targetLessonId || !weekContent) {
+      return;
+    }
+    const exists = weekContent.lessons.some((lesson) => lesson.id === targetLessonId);
+    if (exists) {
+      setSelectedLessonId(targetLessonId);
+    }
+  }, [route.params?.lessonId, weekContent]);
 
   const lessonNotes = useTrainingStore(
     React.useCallback(
@@ -177,6 +192,16 @@ export const WeekScreen: React.FC = () => {
     }
     flushPendingSave();
   }, [flushPendingSave, noteDraft, resolvedWeekId, selectedLessonId]);
+
+  const handleOpenSupportTopic = React.useCallback(
+    (supportId: string) => {
+      navigation.navigate("RootTabs", {
+        screen: "Support",
+        params: { focusSupportId: supportId }
+      });
+    },
+    [navigation]
+  );
 
   React.useEffect(() => {
     return () => {
@@ -342,6 +367,7 @@ export const WeekScreen: React.FC = () => {
         }}
         onChangeNotes={handleNoteChange}
         onRetrySave={handleRetrySave}
+        onOpenSupportTopic={handleOpenSupportTopic}
       />
     </>
   );
@@ -369,6 +395,7 @@ type LessonDetailModalProps = {
   onTogglePractice: () => void;
   onChangeNotes: (text: string) => void;
   onRetrySave: () => void;
+  onOpenSupportTopic: (supportId: string) => void;
 };
 
 const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
@@ -380,7 +407,8 @@ const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
   onClose,
   onTogglePractice,
   onChangeNotes,
-  onRetrySave
+  onRetrySave,
+  onOpenSupportTopic
 }) => {
   const theme = useTheme();
   const [sectionsOpen, setSectionsOpen] = React.useState({
@@ -401,6 +429,24 @@ const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
 
   const lessonSteps = lesson.steps ?? [];
   const { completed, toggleStep } = useLessonStepChecklist(lesson.id, lessonSteps.length);
+  const supportShortcuts = React.useMemo(() => {
+    if (!lesson.supportTopics || lesson.supportTopics.length === 0) {
+      return [];
+    }
+
+    return lesson.supportTopics
+      .map((topicId) => {
+        const lookup = getSupportItemById(topicId);
+        if (!lookup) {
+          return null;
+        }
+        return {
+          id: topicId,
+          title: lookup.item.title
+        };
+      })
+      .filter((entry): entry is { id: string; title: string } => Boolean(entry));
+  }, [lesson.supportTopics]);
 
   const renderNoteStatus = () => {
     switch (noteStatus) {
@@ -629,7 +675,8 @@ const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
             </View>
           ) : null}
 
-          {lesson.supportGuidelines && lesson.supportGuidelines.length > 0 ? (
+          {(supportShortcuts.length > 0 ||
+            (lesson.supportGuidelines && lesson.supportGuidelines.length > 0)) ? (
             <View style={{ marginTop: theme.spacing(2) }}>
               <CollapsibleSection
                 title="What to do if..."
@@ -638,37 +685,77 @@ const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
                   setSectionsOpen((prev) => ({ ...prev, support: !prev.support }))
                 }
               >
-                {lesson.supportGuidelines.map((guideline, index) => (
-                  <View
-                    key={`${lesson.id}-guideline-${index}`}
-                    style={[
-                      stylesModal.bulletRow,
-                      { marginTop: theme.spacing(0.75) }
-                    ]}
-                  >
-                    <View
-                      style={[
-                        stylesModal.bullet,
-                        {
-                          backgroundColor: theme.colors.primary,
-                          borderRadius: theme.radius.pill
-                        }
-                      ]}
-                    />
+                {supportShortcuts.length > 0 ? (
+                  <View>
                     <Text
                       style={[
-                        theme.typography.textVariants.body,
-                        {
-                          color: theme.colors.textPrimary,
-                          flex: 1,
-                          marginLeft: theme.spacing(1)
-                        }
+                        theme.typography.textVariants.caption,
+                        { color: theme.colors.textMuted }
                       ]}
                     >
-                      {guideline}
+                      Jump to a support card
                     </Text>
+                    <View style={stylesModal.supportChipRow}>
+                      {supportShortcuts.map((topic) => (
+                        <Pressable
+                          key={`${lesson.id}-${topic.id}`}
+                          style={[
+                            stylesModal.supportChip,
+                            {
+                              borderColor: theme.colors.border,
+                              backgroundColor: theme.colors.card
+                            }
+                          ]}
+                          onPress={() => onOpenSupportTopic(topic.id)}
+                          accessibilityRole="button"
+                        >
+                          <Text
+                            style={[
+                              stylesModal.supportChipText,
+                              { color: theme.colors.primary }
+                            ]}
+                          >
+                            {topic.title}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
                   </View>
-                ))}
+                ) : null}
+
+                {lesson.supportGuidelines && lesson.supportGuidelines.length > 0
+                  ? lesson.supportGuidelines.map((guideline, index) => (
+                      <View
+                        key={`${lesson.id}-guideline-${index}`}
+                        style={[
+                          stylesModal.bulletRow,
+                          { marginTop: theme.spacing(0.75) }
+                        ]}
+                      >
+                        <View
+                          style={[
+                            stylesModal.bullet,
+                            {
+                              backgroundColor: theme.colors.primary,
+                              borderRadius: theme.radius.pill
+                            }
+                          ]}
+                        />
+                        <Text
+                          style={[
+                            theme.typography.textVariants.body,
+                            {
+                              color: theme.colors.textPrimary,
+                              flex: 1,
+                              marginLeft: theme.spacing(1)
+                            }
+                          ]}
+                        >
+                          {guideline}
+                        </Text>
+                      </View>
+                    ))
+                  : null}
               </CollapsibleSection>
             </View>
           ) : null}
@@ -891,6 +978,22 @@ const stylesModal = StyleSheet.create({
     height: 6,
     marginTop: 8,
     borderRadius: 3
+  },
+  supportChipRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 8
+  },
+  supportChip: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginRight: 8,
+    marginTop: 8
+  },
+  supportChipText: {
+    fontWeight: "600"
   },
   iconBadge: {
     width: 32,

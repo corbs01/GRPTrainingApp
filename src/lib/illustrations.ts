@@ -38,12 +38,39 @@ export const ILLUSTRATION_FALLBACK: IllustrationKey = "default";
 export const isIllustrationKey = (input: string): input is IllustrationKey =>
   Object.prototype.hasOwnProperty.call(illustrationSources, input);
 
-export const getIllustrationSource = (key?: string | null): ImageSourcePropType => {
-  if (!key || !isIllustrationKey(key)) {
-    return illustrationSources[ILLUSTRATION_FALLBACK];
-  }
-  return illustrationSources[key];
+const normalizedAliasMap: Record<string, IllustrationKey> = {
+  sit: "sit",
+  down: "down",
+  crate: "crate",
+  leash: "leash",
+  grooming: "grooming",
+  recall: "recall",
+  leaveit: "leaveIt",
+  settle: "settle",
+  vet: "vet",
+  catintro: "catIntro",
+  cafe: ILLUSTRATION_FALLBACK,
+  car: ILLUSTRATION_FALLBACK
 };
+
+const normalizeKey = (input: string) => input.toLowerCase().replace(/[^a-z]/g, "");
+
+export const resolveIllustrationKey = (key?: string | null): IllustrationKey => {
+  if (!key) {
+    return ILLUSTRATION_FALLBACK;
+  }
+  if (isIllustrationKey(key)) {
+    return key;
+  }
+  const alias = normalizedAliasMap[normalizeKey(key)];
+  if (alias) {
+    return alias;
+  }
+  return ILLUSTRATION_FALLBACK;
+};
+
+export const getIllustrationSource = (key?: string | null): ImageSourcePropType =>
+  illustrationSources[resolveIllustrationKey(key)];
 
 export const getAvailableIllustrationKeys = (): IllustrationKey[] =>
   Object.keys(illustrationSources) as IllustrationKey[];
