@@ -1,7 +1,7 @@
 import React from "react";
 import {
   Alert,
-  Animated,
+  Animated as RNAnimated,
   Easing,
   Image,
   Linking,
@@ -16,6 +16,17 @@ import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { CompositeNavigationProp, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { FontAwesome5 } from "@expo/vector-icons";
+import Reanimated, {
+  FadeInDown,
+  FadeOutUp,
+  Layout,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+  interpolate,
+  Easing as ReanimatedEasing
+} from "react-native-reanimated";
 import * as FileSystem from "expo-file-system";
 import { MMKV } from "react-native-mmkv";
 
@@ -51,6 +62,8 @@ type ThemeOption = {
   tagline: string;
 };
 
+type SectionKey = "profile" | "theme" | "privacy" | "feedback";
+
 const THEME_OPTIONS: ThemeOption[] = [
   {
     key: "light",
@@ -82,7 +95,7 @@ export const SettingsScreen: React.FC = () => {
   const lessonEngagement = useDailyPlanStore((state) => state.lessonEngagement);
   const lastShownByWeek = useDailyPlanStore((state) => state.lastShownByWeek);
   const resetDailyPlan = useDailyPlanStore((state) => state.reset);
-  const themeAnimation = React.useRef(new Animated.Value(mode === "dark" ? 1 : 0)).current;
+  const themeAnimation = React.useRef(new RNAnimated.Value(mode === "dark" ? 1 : 0)).current;
   const [isExporting, setIsExporting] = React.useState(false);
   const [isClearing, setIsClearing] = React.useState(false);
   const [showClearModal, setShowClearModal] = React.useState(false);
@@ -91,17 +104,39 @@ export const SettingsScreen: React.FC = () => {
     return typeof stored === "number" ? stored : null;
   });
   const [toastMessage, setToastMessage] = React.useState<string | null>(null);
-  const toastOpacity = React.useRef(new Animated.Value(0)).current;
+  const toastOpacity = React.useRef(new RNAnimated.Value(0)).current;
   const toastTimeout = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [expandedSections, setExpandedSections] = React.useState<Record<SectionKey, boolean>>({
+    profile: true,
+    theme: true,
+    privacy: true,
+    feedback: true
+  });
+  const themeGlow = useSharedValue(0);
 
   React.useEffect(() => {
-    Animated.timing(themeAnimation, {
+    RNAnimated.timing(themeAnimation, {
       toValue: mode === "dark" ? 1 : 0,
       duration: 240,
       easing: Easing.out(Easing.quad),
       useNativeDriver: false
     }).start();
   }, [mode, themeAnimation]);
+  React.useEffect(() => {
+    themeGlow.value = 1;
+    themeGlow.value = withTiming(0, {
+      duration: 160,
+      easing: ReanimatedEasing.out(ReanimatedEasing.quad)
+    });
+  }, [mode, themeGlow]);
+  const themeGlowStyle = useAnimatedStyle(() => ({
+    opacity: themeGlow.value * 0.6,
+    transform: [
+      {
+        scale: 1 + themeGlow.value * 0.08
+      }
+    ]
+  }));
 
   const friendlyDob = React.useMemo(() => {
     if (!puppy?.dob) {
@@ -130,6 +165,12 @@ export const SettingsScreen: React.FC = () => {
     }),
     [mode, theme]
   );
+  const handleToggleSection = React.useCallback((key: SectionKey) => {
+    setExpandedSections((previous) => ({
+      ...previous,
+      [key]: !previous[key]
+    }));
+  }, []);
 
   React.useEffect(() => {
     return () => {
@@ -145,13 +186,13 @@ export const SettingsScreen: React.FC = () => {
         clearTimeout(toastTimeout.current);
       }
       setToastMessage(message);
-      Animated.timing(toastOpacity, {
+      RNAnimated.timing(toastOpacity, {
         toValue: 1,
         duration: 180,
         useNativeDriver: true
       }).start();
       toastTimeout.current = setTimeout(() => {
-        Animated.timing(toastOpacity, {
+        RNAnimated.timing(toastOpacity, {
           toValue: 0,
           duration: 220,
           useNativeDriver: true
@@ -309,21 +350,18 @@ export const SettingsScreen: React.FC = () => {
     <View style={styles.screenWrapper}>
       <ScreenContainer scrollable>
         <Text style={[styles.heading, { color: theme.colors.textPrimary }]}>Settings</Text>
-      <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-        Tune your puppy profile, pick a theme, export memories, and send feedback.
-      </Text>
+        <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
+          Tune your puppy profile, pick a theme, export memories, and send feedback.
+        </Text>
 
-      {/* Puppy Profile */}
-      <View
-        style={[
-          styles.card,
-          {
-            backgroundColor: cardPalette.profile,
-            borderColor: theme.colors.border
-          }
-        ]}
+      <CollapsibleCard
+        label="Puppy Profile"
+        backgroundColor={cardPalette.profile}
+        borderColor={theme.colors.border}
+        isExpanded={expandedSections.profile}
+        onToggle={() => handleToggleSection("profile")}
+        liftOnPress
       >
-        <SectionHeader label="Puppy Profile" />
         <View style={styles.profileRow}>
           <View
             style={[
@@ -358,19 +396,15 @@ export const SettingsScreen: React.FC = () => {
           fullWidth
           style={{ marginTop: 16 }}
         />
-      </View>
+      </CollapsibleCard>
 
-      {/* Theme */}
-      <View
-        style={[
-          styles.card,
-          {
-            backgroundColor: cardPalette.theme,
-            borderColor: theme.colors.border
-          }
-        ]}
+      <CollapsibleCard
+        label="Theme"
+        backgroundColor={cardPalette.theme}
+        borderColor={theme.colors.border}
+        isExpanded={expandedSections.theme}
+        onToggle={() => handleToggleSection("theme")}
       >
-        <SectionHeader label="Theme" />
         <Text style={[styles.cardBody, { color: theme.colors.textSecondary }]}>
           Cozy pastels for daytime stories or a moonlit palette for evening snuggles.
         </Text>
@@ -398,6 +432,16 @@ export const SettingsScreen: React.FC = () => {
                       }
                     ]}
                   >
+                    {selected ? (
+                      <Reanimated.View
+                        pointerEvents="none"
+                        style={[
+                          styles.themeGlow,
+                          { backgroundColor: theme.palette.softSage },
+                          themeGlowStyle
+                        ]}
+                      />
+                    ) : null}
                     <Text style={styles.themeOptionEmoji}>{option.emoji}</Text>
                     <Text style={[styles.themeMoodTitle, { color: theme.colors.textPrimary }]}>
                       {option.label}
@@ -433,7 +477,7 @@ export const SettingsScreen: React.FC = () => {
           })}
         </View>
 
-        <Animated.View
+        <RNAnimated.View
           style={[
             styles.themePreview,
             {
@@ -454,16 +498,16 @@ export const SettingsScreen: React.FC = () => {
             </Text>
           </View>
           <View style={styles.previewArt}>
-            <Animated.View style={[styles.previewHalo, { backgroundColor: previewGlow }]} />
+            <RNAnimated.View style={[styles.previewHalo, { backgroundColor: previewGlow }]} />
             <Image source={puppyPreview} style={styles.previewImage} />
-            <Animated.View
+            <RNAnimated.View
               style={[
                 styles.previewSparkle,
                 styles.previewSparkleLeft,
                 { opacity: previewSparkles }
               ]}
             />
-            <Animated.View
+            <RNAnimated.View
               style={[
                 styles.previewSparkle,
                 styles.previewSparkleRight,
@@ -471,73 +515,79 @@ export const SettingsScreen: React.FC = () => {
               ]}
             />
           </View>
-        </Animated.View>
-      </View>
+        </RNAnimated.View>
+      </CollapsibleCard>
 
-        {/* Data & Privacy */}
-        <View
-          style={[
-            styles.card,
-            {
-              backgroundColor: cardPalette.privacy,
-              borderColor: theme.colors.border
-            }
-          ]}
-        >
-          <SectionHeader label="Data & Privacy" />
-          <ActionRow
-            title="Export My Data"
-            body="Create a JSON bundle with your puppy profile, journal entries, and lesson logs."
-            actionLabel={isExporting ? "Preparing…" : "Export"}
-            onAction={handleExportData}
-            disabled={isExporting}
-          />
-          <Text style={[styles.exportMeta, { color: theme.colors.textSecondary }]}>
-            {formattedLastExport ? `Last exported ${formattedLastExport}` : "No exports yet"}
-          </Text>
-          <View style={[styles.separator, { backgroundColor: theme.colors.overlay }]} />
-          <ActionRow
-            title="Clear All Local Data"
-            body="Remove puppy details, journal entries, and lesson progress from this device."
-            actionLabel={isClearing ? "Clearing…" : "Clear all"}
-            destructive
-            onAction={handleClearData}
-            disabled={isClearing}
-          />
-          <Button
-            label="Privacy details"
-            variant="outline"
-            onPress={() => navigation.navigate("PrivacyModal")}
-            style={{ marginTop: 18 }}
-            fullWidth
-          />
-        </View>
-
-      {/* Feedback & About */}
-      <View
-        style={[
-          styles.card,
-          {
-            backgroundColor: cardPalette.feedback,
-            borderColor: theme.colors.border
-          }
-        ]}
+      <CollapsibleCard
+        label="Data & Privacy"
+        backgroundColor={cardPalette.privacy}
+        borderColor={theme.colors.border}
+        isExpanded={expandedSections.privacy}
+        onToggle={() => handleToggleSection("privacy")}
       >
-        <SectionHeader label="Feedback & About" />
+        <ActionRow
+          title="Export My Data"
+          body="Create a JSON bundle with your puppy profile, journal entries, and lesson logs."
+          actionLabel={isExporting ? "Preparing…" : "Export"}
+          onAction={handleExportData}
+          disabled={isExporting}
+          enableRipple
+        />
+        <Text style={[styles.exportMeta, { color: theme.colors.textSecondary }]}>
+          {formattedLastExport ? `Last exported ${formattedLastExport}` : "No exports yet"}
+        </Text>
+        <View style={[styles.separator, { backgroundColor: theme.colors.overlay }]} />
+        <ActionRow
+          title="Clear All Local Data"
+          body="Remove puppy details, journal entries, and lesson progress from this device."
+          actionLabel={isClearing ? "Clearing…" : "Clear all"}
+          destructive
+          onAction={handleClearData}
+          disabled={isClearing}
+        />
+        <Button
+          label="Privacy details"
+          variant="outline"
+          onPress={() => navigation.navigate("PrivacyModal")}
+          style={{ marginTop: 18 }}
+          fullWidth
+        />
+      </CollapsibleCard>
+
+      <CollapsibleCard
+        label="Feedback & About"
+        backgroundColor={cardPalette.feedback}
+        borderColor={theme.colors.border}
+        isExpanded={expandedSections.feedback}
+        onToggle={() => handleToggleSection("feedback")}
+      >
         <Text style={[styles.cardBody, { color: theme.colors.textSecondary }]}>
           We read every note and use it to plan weekly improvements.
         </Text>
         <View style={styles.feedbackButtons}>
-          <Button label="Share feedback in-app" onPress={handleOpenFeedback} fullWidth />
-          <Button label="Visit site" variant="secondary" onPress={handleVisitSite} fullWidth />
+          <Button
+            label="Share feedback in-app"
+            onPress={handleOpenFeedback}
+            fullWidth
+            enableRipple
+            rippleColor={theme.palette.softSage}
+          />
+          <Button
+            label="Visit site"
+            variant="secondary"
+            onPress={handleVisitSite}
+            fullWidth
+            enableRipple
+            rippleColor={theme.palette.softSage}
+          />
         </View>
         <Text style={[styles.versionText, { color: theme.colors.textMuted }]}>
           Version {appVersion} · Crafted with extra belly rubs
         </Text>
-      </View>
+      </CollapsibleCard>
       </ScreenContainer>
       {toastMessage ? (
-        <Animated.View
+        <RNAnimated.View
           pointerEvents="none"
           style={[
             styles.toast,
@@ -550,7 +600,7 @@ export const SettingsScreen: React.FC = () => {
           ]}
         >
           <Text style={[styles.toastText, { color: theme.colors.textPrimary }]}>{toastMessage}</Text>
-        </Animated.View>
+        </RNAnimated.View>
       ) : null}
       <Modal
         transparent
@@ -598,18 +648,156 @@ export const SettingsScreen: React.FC = () => {
   );
 };
 
-const SectionHeader: React.FC<{ label: string }> = ({ label }) => {
+type CollapsibleCardProps = {
+  label: string;
+  backgroundColor: string;
+  borderColor: string;
+  isExpanded: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+  liftOnPress?: boolean;
+};
+
+const CollapsibleCard: React.FC<CollapsibleCardProps> = ({
+  label,
+  backgroundColor,
+  borderColor,
+  isExpanded,
+  onToggle,
+  children,
+  liftOnPress = false
+}) => {
   const theme = useTheme();
+  const lift = useSharedValue(0);
+
+  const liftStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        translateY: liftOnPress ? lift.value : 0
+      }
+    ],
+    elevation: liftOnPress ? 6 + Math.abs(lift.value) : 0,
+    shadowOpacity: liftOnPress ? 0.12 : 0.08
+  }));
+
+  const handlePressIn = React.useCallback(() => {
+    if (!liftOnPress) {
+      return;
+    }
+    lift.value = withSpring(-6, {
+      damping: 18,
+      stiffness: 280,
+      mass: 0.5
+    });
+  }, [lift, liftOnPress]);
+
+  const handlePressOut = React.useCallback(() => {
+    if (!liftOnPress) {
+      return;
+    }
+    lift.value = withSpring(0, {
+      damping: 20,
+      stiffness: 260,
+      mass: 0.5
+    });
+  }, [lift, liftOnPress]);
+
   return (
-    <View style={styles.sectionHeader}>
-      <FontAwesome5
-        name="paw"
-        size={16}
-        color={theme.colors.accent}
-        style={{ marginRight: 8 }}
+    <Reanimated.View
+      layout={Layout.springify().duration(180)}
+      style={[
+        styles.card,
+        {
+          backgroundColor,
+          borderColor,
+          shadowColor: theme.colors.overlay
+        },
+        liftStyle
+      ]}
+    >
+      <SectionHeader
+        label={label}
+        isExpanded={isExpanded}
+        onToggle={onToggle}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
       />
-      <Text style={[styles.sectionLabel, { color: theme.colors.textPrimary }]}>{label}</Text>
-    </View>
+      {isExpanded ? (
+        <Reanimated.View
+          entering={FadeInDown.duration(180).springify()}
+          exiting={FadeOutUp.duration(140)}
+          style={styles.sectionBody}
+        >
+          {children}
+        </Reanimated.View>
+      ) : null}
+    </Reanimated.View>
+  );
+};
+
+type SectionHeaderProps = {
+  label: string;
+  isExpanded: boolean;
+  onToggle: () => void;
+  onPressIn?: () => void;
+  onPressOut?: () => void;
+};
+
+const SectionHeader: React.FC<SectionHeaderProps> = ({
+  label,
+  isExpanded,
+  onToggle,
+  onPressIn,
+  onPressOut
+}) => {
+  const theme = useTheme();
+  const progress = useSharedValue(isExpanded ? 1 : 0);
+
+  React.useEffect(() => {
+    progress.value = withTiming(isExpanded ? 1 : 0, {
+      duration: 160,
+      easing: ReanimatedEasing.out(ReanimatedEasing.quad)
+    });
+  }, [isExpanded, progress]);
+
+  const chevronStyle = useAnimatedStyle(() => {
+    const angle = interpolate(progress.value, [0, 1], [-90, 0]);
+    return {
+      transform: [{ rotate: `${angle}deg` }]
+    };
+  });
+
+  return (
+    <Pressable
+      onPress={onToggle}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+      style={styles.sectionHeaderPressable}
+      accessibilityRole="button"
+      accessibilityLabel={`${label} section`}
+      accessibilityState={{ expanded: isExpanded }}
+    >
+      <View style={styles.sectionHeader}>
+        <FontAwesome5
+          name="paw"
+          size={16}
+          color={theme.colors.accent}
+          style={{ marginRight: 8 }}
+        />
+        <Text style={[styles.sectionLabel, { color: theme.colors.textPrimary }]}>{label}</Text>
+      </View>
+      <Reanimated.View
+        style={[
+          styles.sectionChevron,
+          {
+            borderColor: theme.colors.overlay
+          },
+          chevronStyle
+        ]}
+      >
+        <FontAwesome5 name="chevron-down" size={12} color={theme.colors.textSecondary} />
+      </Reanimated.View>
+    </Pressable>
   );
 };
 
@@ -620,6 +808,8 @@ type ActionRowProps = {
   destructive?: boolean;
   disabled?: boolean;
   onAction: () => void;
+  enableRipple?: boolean;
+  rippleColor?: string;
 };
 
 const ActionRow: React.FC<ActionRowProps> = ({
@@ -628,7 +818,9 @@ const ActionRow: React.FC<ActionRowProps> = ({
   actionLabel,
   destructive,
   disabled,
-  onAction
+  onAction,
+  enableRipple,
+  rippleColor
 }) => {
   const theme = useTheme();
   return (
@@ -643,6 +835,8 @@ const ActionRow: React.FC<ActionRowProps> = ({
         variant={destructive ? "outline" : "secondary"}
         onPress={onAction}
         disabled={disabled}
+        enableRipple={enableRipple}
+        rippleColor={rippleColor ?? theme.palette.softSage}
         style={[
           styles.actionButton,
           destructive && { borderColor: theme.colors.error },
@@ -672,14 +866,30 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 20
   },
-  sectionHeader: {
+  sectionHeaderPressable: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10
+    justifyContent: "space-between"
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center"
   },
   sectionLabel: {
     fontSize: 18,
     fontWeight: "700"
+  },
+  sectionChevron: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 12
+  },
+  sectionBody: {
+    marginTop: 12
   },
   profileRow: {
     flexDirection: "row",
@@ -727,6 +937,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     padding: 16
+  },
+  themeGlow: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    borderRadius: 20
   },
   themeOptionEmoji: {
     fontSize: 24,
