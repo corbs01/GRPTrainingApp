@@ -77,6 +77,22 @@ export const getLessonSummariesFromIds = (weekId: string, lessonIds: string[]): 
     .map(toSummary);
 };
 
+export const getLessonDetailById = (lessonId: string): LessonDetail | undefined => {
+  if (!lessonId) {
+    return undefined;
+  }
+
+  const weeks = loaderGetWeeks();
+  for (const week of weeks) {
+    const lesson = getLessonsByWeekId(week.id).find((entry) => entry.id === lessonId);
+    if (lesson) {
+      return lesson;
+    }
+  }
+
+  return undefined;
+};
+
 export const getWeekLessonContent = (weekId: string): WeekLessonContent | undefined => {
   const bundle = getLessonBundle(weekId);
   if (!bundle) {

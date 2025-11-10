@@ -14,6 +14,7 @@ module.exports = function (api) {
             "@lib": "./src/lib",
             "@theme": "./src/theme",
             "@data": "./src/data",
+            "@hooks": "./src/hooks",
             "@assets": "./assets"
           }
         }

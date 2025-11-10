@@ -1,339 +1,297 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import Animated, {
-  Easing,
-  interpolateColor,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming
-} from "react-native-reanimated";
+import { GestureResponderEvent, Pressable, StyleSheet, Text, View } from "react-native";
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { Feather } from "@expo/vector-icons";
 
 import { Illustration } from "@components/Illustration";
 import { getLessonIllustrationKey } from "@data/illustrations";
-import { LessonCategory, LessonSummary, getLessonCategories } from "@data/index";
+import { getLessonDetailById } from "@data/index";
+import type { LessonDetail } from "@data/index";
+import type { IllustrationKey } from "@lib/illustrations";
 import { useTheme } from "@theme/index";
-import { usePractice } from "@lib/practiceLog";
+import { useWeeksStore } from "@state/weeksStore";
 
 type DailyPlanCardProps = {
-  lesson: LessonSummary;
-  onToggle?: () => void | Promise<void>;
-  onQuickAdd?: (lesson: LessonSummary) => void;
-};
-
-const CATEGORY_LABELS: Record<LessonCategory, string> = {
-  foundation: "Foundation",
-  lifeManners: "Life + Manners",
-  socialization: "Socialization"
+  lessonId: string;
+  title?: string;
+  objective?: string;
+  duration?: string;
+  practiced?: boolean;
+  icon?: string;
+  isWeeklyFocus?: boolean;
+  onPress?: (lessonId: string) => void;
+  onTogglePractice?: (lessonId: string, nextPracticed: boolean) => void | Promise<void>;
 };
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export const DailyPlanCard: React.FC<DailyPlanCardProps> = ({ lesson, onToggle, onQuickAdd }) => {
+const ILLUSTRATION_EMOJI: Partial<Record<IllustrationKey, string>> = {
+  crate: "🛏️",
+  handTarget: "👆",
+  leaveIt: "🍪",
+  leash: "🦮",
+  looseLeash: "🦮",
+  recall: "🎯",
+  sit: "🐾",
+  stay: "🧘",
+  settle: "🪑",
+  vet: "🩺",
+  trade: "🔁",
+  focus: "👀",
+  independence: "🏠",
+  distraction: "🎧",
+  doorway: "🚪"
+};
+
+export const DailyPlanCard: React.FC<DailyPlanCardProps> = ({
+  lessonId,
+  title,
+  objective,
+  duration,
+  practiced = false,
+  icon,
+  isWeeklyFocus,
+  onPress,
+  onTogglePractice
+}) => {
   const theme = useTheme();
-  const categories = React.useMemo(() => getLessonCategories(lesson.id), [lesson.id]);
-  const [isPending, setIsPending] = React.useState(false);
-  const { practicedToday, toggle } = usePractice(lesson.id);
-  const practiceProgress = useSharedValue(practicedToday ? 1 : 0);
-  const liftProgress = useSharedValue(0);
-  const handleQuickAdd = React.useCallback(() => {
-    onQuickAdd?.(lesson);
-  }, [lesson, onQuickAdd]);
+  const practicedOverride = useWeeksStore(
+    React.useCallback((state) => state.practicedOverrides[lessonId], [lessonId])
+  );
+  const setLessonPracticeStatus = useWeeksStore((state) => state.setLessonPracticeStatus);
+  const pressScale = useSharedValue(1);
+  const [togglePending, setTogglePending] = React.useState(false);
 
-  const handleToggle = React.useCallback(() => {
-    toggle();
-    if (!onToggle) {
-      return;
-    }
-    try {
-      const maybePromise = onToggle();
-      if (maybePromise && typeof (maybePromise as Promise<void>).then === "function") {
-        setIsPending(true);
-        (maybePromise as Promise<void>).finally(() => setIsPending(false));
-      }
-    } catch {
-      setIsPending(false);
-    }
-  }, [onToggle, toggle]);
-
+  const lessonDetail = React.useMemo<LessonDetail | undefined>(
+    () => getLessonDetailById(lessonId),
+    [lessonId]
+  );
   const illustrationKey = React.useMemo(
-    () => getLessonIllustrationKey(lesson.id),
-    [lesson.id]
+    () => getLessonIllustrationKey(lessonId),
+    [lessonId]
+  );
+  const derivedTitle = title ?? lessonDetail?.title ?? "Training focus";
+  const derivedObjective =
+    objective ?? lessonDetail?.objective ?? "Open for micro-steps and coaching notes.";
+  const derivedDuration = duration ?? lessonDetail?.duration ?? "1–3 min";
+  const glyph =
+    icon ?? (illustrationKey ? ILLUSTRATION_EMOJI[illustrationKey] : undefined) ?? "🐾";
+
+  const [localPracticed, setLocalPracticed] = React.useState(
+    practicedOverride ?? practiced ?? false
   );
 
   React.useEffect(() => {
-    practiceProgress.value = withTiming(practicedToday ? 1 : 0, {
-      duration: practicedToday ? 220 : 160,
-      easing: Easing.out(Easing.cubic)
-    });
-  }, [practiceProgress, practicedToday]);
+    setLocalPracticed(practicedOverride ?? practiced ?? false);
+  }, [practicedOverride, practiced]);
 
-  const circleSize = theme.spacing(3);
-  const pillSpacing = theme.spacing(0.5);
-  const liftOffset = theme.spacingTokens.xs;
-
-  const cardStyle = useAnimatedStyle(() => {
-    const background = interpolateColor(
-      practiceProgress.value,
-      [0, 1],
-      [theme.colors.surface, theme.colors.primarySoft]
-    );
-    const border = interpolateColor(
-      practiceProgress.value,
-      [0, 1],
-      [theme.colors.border, theme.colors.primary]
-    );
-
-    return {
-      backgroundColor: background,
-      borderColor: border,
-      transform: [
-        { translateY: -liftOffset * liftProgress.value },
-        { scale: 1 + liftProgress.value * 0.02 }
-      ],
-      elevation: theme.shadow.soft.elevation * liftProgress.value,
-      shadowColor: theme.shadow.soft.shadowColor,
-      shadowOpacity: theme.shadow.soft.shadowOpacity * liftProgress.value,
-      shadowRadius: theme.shadow.soft.shadowRadius * liftProgress.value,
-      shadowOffset: {
-        width: theme.shadow.soft.shadowOffset.width * liftProgress.value,
-        height: theme.shadow.soft.shadowOffset.height * liftProgress.value
-      }
-    };
-  });
-
-  const checkCircleStyle = useAnimatedStyle(() => ({
-    borderColor: interpolateColor(
-      practiceProgress.value,
-      [0, 1],
-      [theme.colors.border, theme.colors.primary]
-    ),
-    backgroundColor: interpolateColor(
-      practiceProgress.value,
-      [0, 1],
-      ["transparent", theme.colors.primary]
-    ),
-    transform: [
-      {
-        scale: 0.92 + practiceProgress.value * 0.12
-      }
-    ]
+  const cardScaleStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pressScale.value }]
   }));
 
-  const checkBloomStyle = useAnimatedStyle(() => ({
-    opacity: practiceProgress.value * 0.4,
-    transform: [
-      {
-        scale: 1 + practiceProgress.value * 0.45
+  const handleTogglePractice = React.useCallback(
+    (event?: GestureResponderEvent) => {
+      event?.stopPropagation?.();
+      if (togglePending) {
+        return;
       }
-    ]
-  }));
-
-  const checkIconStyle = useAnimatedStyle(() => ({
-    opacity: practiceProgress.value,
-    transform: [
-      {
-        scale: 0.85 + practiceProgress.value * 0.15
+      const next = !localPracticed;
+      setLocalPracticed(next);
+      setLessonPracticeStatus(lessonId, next);
+      const maybePromise = onTogglePractice?.(lessonId, next);
+      if (maybePromise && typeof (maybePromise as Promise<void>).then === "function") {
+        setTogglePending(true);
+        (maybePromise as Promise<void>)
+          .catch(() => {
+            // Revert if external toggle fails so UI stays truthful.
+            setLocalPracticed((prev) => {
+              if (prev === next) {
+                setLessonPracticeStatus(lessonId, !next);
+                return !next;
+              }
+              return prev;
+            });
+          })
+          .finally(() => setTogglePending(false));
       }
-    ]
-  }));
+    },
+    [lessonId, localPracticed, onTogglePractice, setLessonPracticeStatus, togglePending]
+  );
 
   const handlePressIn = React.useCallback(() => {
-    liftProgress.value = withTiming(1, {
-      duration: 140,
-      easing: Easing.out(Easing.quad)
-    });
-  }, [liftProgress]);
+    pressScale.value = withTiming(0.95, { duration: 90 });
+  }, [pressScale]);
 
   const handlePressOut = React.useCallback(() => {
-    liftProgress.value = withTiming(0, {
-      duration: 220,
-      easing: Easing.out(Easing.cubic)
-    });
-  }, [liftProgress]);
+    pressScale.value = withTiming(1, { duration: 160 });
+  }, [pressScale]);
+
+  const handleCardPress = React.useCallback(() => {
+    onPress?.(lessonId);
+  }, [lessonId, onPress]);
 
   return (
     <AnimatedPressable
-      accessibilityRole="button"
-      accessibilityState={{ checked: practicedToday, busy: isPending }}
-      accessibilityLabel={`Mark ${lesson.title} as practiced`}
-      onPress={handleToggle}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      onTouchCancel={handlePressOut}
       style={[
         styles.card,
         {
-          borderRadius: theme.radius.md
+          borderRadius: theme.radius.lg,
+          backgroundColor: theme.colors.surface,
+          borderColor: theme.colors.border,
+          opacity: localPracticed ? 0.78 : 1
         },
-        cardStyle,
-        isPending && { opacity: 0.85 }
+        cardScaleStyle
       ]}
+      onPress={handleCardPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      accessibilityRole="button"
+      accessibilityHint="Opens lesson details"
+      accessibilityLabel={`${derivedTitle} plan`}
     >
-      <View style={styles.row}>
-        <View style={styles.checkWrapper}>
-          <Animated.View
-            pointerEvents="none"
+      <View style={styles.cornerAccent}>
+        <Illustration name={illustrationKey} size={theme.spacing(5)} />
+      </View>
+      <View style={styles.headerRow}>
+        <View style={[styles.iconChip, { backgroundColor: theme.palette.softMist }]}>
+          <Text style={[theme.typography.textVariants.body, styles.iconText]}>{glyph}</Text>
+        </View>
+        {isWeeklyFocus ? (
+          <View
             style={[
-              styles.checkBloom,
+              styles.focusBadge,
               {
-                borderRadius: circleSize,
-                backgroundColor: theme.colors.primarySoft
-              },
-              checkBloomStyle
-            ]}
-          />
-          <Animated.View
-            style={[
-              styles.checkCircle,
-              {
-                borderRadius: circleSize / 2,
-                width: circleSize,
-                height: circleSize
-              },
-              checkCircleStyle
+                backgroundColor: theme.palette.warmHighlight,
+                borderRadius: theme.radius.pill
+              }
             ]}
           >
-            <Animated.View style={checkIconStyle}>
-              <Feather name="check" size={16} color={theme.colors.onPrimary} />
-            </Animated.View>
-          </Animated.View>
-        </View>
-        <View style={[styles.content, { marginLeft: theme.spacing(1) }]}>
-          <View style={styles.titleRow}>
             <Text
               style={[
-                theme.typography.textVariants.title,
-                { color: theme.colors.textPrimary, flex: 1 }
+                theme.typography.textVariants.caption,
+                { color: theme.colors.textPrimary, fontWeight: "600" }
               ]}
-              numberOfLines={2}
             >
-              {lesson.title}
+              This week’s focus
             </Text>
-            <View style={styles.titleActions}>
-              {onQuickAdd ? (
-                <Pressable
-                  onPress={handleQuickAdd}
-                  style={[
-                    styles.quickAddButton,
-                    {
-                      borderColor: theme.colors.border,
-                      backgroundColor: theme.colors.surface
-                    }
-                  ]}
-                  hitSlop={12}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Add a journal entry for ${lesson.title}`}
-                >
-                  <Feather name="edit-3" size={14} color={theme.colors.primary} />
-                </Pressable>
-              ) : null}
-              <Illustration
-                name={illustrationKey}
-                size={theme.spacing(5)}
-                style={{ marginLeft: theme.spacing(1) }}
-              />
-            </View>
           </View>
-          {lesson.objective ? (
-            <Text
-              style={[
-                theme.typography.textVariants.body,
-                { color: theme.colors.textSecondary, marginTop: theme.spacing(0.5) }
-              ]}
-              numberOfLines={2}
-            >
-              {lesson.objective}
-            </Text>
-          ) : null}
-          <View style={[styles.metaRow, { marginTop: theme.spacing(0.75) }]}>
-            {categories.map((category) => (
-              <View
-                key={`${lesson.id}-${category}`}
-                style={[
-                  styles.categoryPill,
-                  {
-                    borderRadius: theme.radius.pill,
-                    backgroundColor: theme.palette.softMist,
-                    paddingHorizontal: theme.spacing(0.75),
-                    paddingVertical: theme.spacing(0.25),
-                    marginRight: pillSpacing
-                  }
-                ]}
-              >
-                <Text
-                  style={[
-                    theme.typography.textVariants.caption,
-                    { color: theme.colors.textMuted }
-                  ]}
-                >
-                  {CATEGORY_LABELS[category]}
-                </Text>
-              </View>
-            ))}
-            {lesson.duration ? (
-              <Text
-                style={[
-                  theme.typography.textVariants.caption,
-                  { color: theme.colors.textMuted, marginLeft: categories.length > 0 ? pillSpacing : 0 }
-                ]}
-              >
-                {lesson.duration}
-              </Text>
-            ) : null}
-          </View>
-        </View>
+        ) : null}
       </View>
+
+      <View style={styles.titleBlock}>
+        <Text
+          numberOfLines={2}
+          style={[
+            theme.typography.textVariants.title,
+            { color: theme.colors.textPrimary, flex: 1 }
+          ]}
+        >
+          {derivedTitle}
+        </Text>
+      </View>
+
+      <View style={styles.metaRow}>
+        <Text
+          style={[
+            theme.typography.textVariants.caption,
+            { color: theme.colors.textSecondary, fontWeight: "600" }
+          ]}
+        >
+          {derivedDuration}
+        </Text>
+        <View
+          style={[
+            styles.dot,
+            { backgroundColor: theme.colors.border, marginHorizontal: 8 }
+          ]}
+        />
+        <Text
+          numberOfLines={2}
+          style={[
+            theme.typography.textVariants.body,
+            {
+              color: theme.colors.textSecondary,
+              flex: 1
+            }
+          ]}
+        >
+          {derivedObjective}
+        </Text>
+      </View>
+
+      <Pressable
+        hitSlop={8}
+        style={[
+          styles.checkButton,
+          {
+            borderColor: theme.colors.border,
+            backgroundColor: theme.colors.surface,
+            opacity: togglePending ? 0.5 : 1
+          }
+        ]}
+        accessibilityRole="switch"
+        accessibilityState={{ checked: localPracticed, busy: togglePending }}
+        accessibilityLabel={
+          localPracticed ? "Mark as not practiced" : "Mark lesson as practiced"
+        }
+        onPress={handleTogglePractice}
+      >
+        <Feather name="check" size={18} color={localPracticed ? theme.colors.textMuted : theme.colors.primary} />
+      </Pressable>
     </AnimatedPressable>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    padding: 16,
     borderWidth: StyleSheet.hairlineWidth,
-    marginBottom: 12
+    marginBottom: 12,
+    overflow: "hidden"
   },
-  row: {
+  cornerAccent: {
+    position: "absolute",
+    right: 16,
+    top: 12,
+    opacity: 0.65
+  },
+  headerRow: {
     flexDirection: "row",
-    alignItems: "flex-start"
-  },
-  checkWrapper: {
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "space-between"
   },
-  checkCircle: {
-    borderWidth: StyleSheet.hairlineWidth,
-    alignItems: "center",
-    justifyContent: "center"
+  iconChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999
   },
-  checkBloom: {
-    ...StyleSheet.absoluteFillObject
+  iconText: {
+    lineHeight: 20
   },
-  content: {
-    flex: 1
+  focusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 3
   },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "center"
-  },
-  titleActions: {
-    flexDirection: "row",
-    alignItems: "center"
-  },
-  quickAddButton: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 999,
-    padding: 6,
-    marginLeft: 8
+  titleBlock: {
+    marginTop: 10,
+    marginBottom: 8
   },
   metaRow: {
     flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap"
+    alignItems: "center"
   },
-  categoryPill: {
-    marginBottom: 4
+  dot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    opacity: 0.6
+  },
+  checkButton: {
+    position: "absolute",
+    right: 12,
+    bottom: 12,
+    padding: 8,
+    borderRadius: 999,
+    borderWidth: StyleSheet.hairlineWidth
   }
 });

@@ -31,6 +31,7 @@ type DailyPlanState = {
   lastShownByWeek: Record<string, string>;
   ensurePlan: (weekId: string, date: string, lessonPool: string[]) => DailyPlan;
   toggleLesson: (weekId: string, date: string, lessonId: string) => void;
+  reorderLessons: (weekId: string, date: string, orderedLessonIds: string[]) => void;
   reset: () => void;
 };
 
@@ -159,6 +160,31 @@ export const useDailyPlanStore = create<DailyPlanState>()(
             }
           },
           lessonEngagement: nextEngagement
+        }));
+      },
+      reorderLessons: (weekId, date, orderedLessonIds) => {
+        const key = dailyPlanKey(weekId, date);
+        const plan = get().plans[key];
+        if (!plan) {
+          return;
+        }
+
+        const normalized = orderedLessonIds.filter((lessonId, index, list) => {
+          return plan.lessonIds.includes(lessonId) && list.indexOf(lessonId) === index;
+        });
+
+        if (normalized.length !== plan.lessonIds.length) {
+          return;
+        }
+
+        set((state) => ({
+          plans: {
+            ...state.plans,
+            [key]: {
+              ...plan,
+              lessonIds: normalized
+            }
+          }
         }));
       },
       reset: () =>

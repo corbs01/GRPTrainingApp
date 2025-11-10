@@ -1,57 +1,83 @@
-import React, { useCallback, useMemo } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import React from "react";
+import { Image, Pressable, StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, {
+  Extrapolate,
+  interpolate,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming
+} from "react-native-reanimated";
+import type { SharedValue } from "react-native-reanimated";
 import { useNavigation } from "@react-navigation/native";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { Feather } from "@expo/vector-icons";
 
-import { ScreenContainer } from "@components/ScreenContainer";
-import { Card } from "@components/Card";
-import { DailyPlanCard } from "@components/DailyPlanCard";
+import { DailyPlanBoard } from "@components/home/DailyPlanBoard";
+import { LessonDetailModal } from "@components/LessonDetailModal";
 import { useTheme } from "@theme/index";
+import { RootTabParamList } from "@app/navigation/types";
+import {
+  getDefaultWeek,
+  getLessonDetailById,
+  getWeekById,
+  getWeekByNumber,
+  LessonDetail,
+  LessonSummary,
+  WeekSummary
+} from "@data/index";
 import { usePuppyStore } from "@state/puppyStore";
 import { useDailyPlanStore, generateDailyPlan } from "@state/dailyPlanStore";
-import { getDefaultWeek, getWeekByNumber, LessonSummary, WeekSummary } from "@data/index";
-import { RootTabParamList } from "@app/navigation/types";
-import { getPracticeDateKey, usePracticeEntries } from "@lib/practiceLog";
+import { useWeeksStore } from "@state/weeksStore";
+import { useMidnightPlanReset } from "@hooks/useMidnightPlanReset";
+import { useLessonNotes } from "@hooks/useLessonNotes";
+import { usePracticeEntries, getPracticeDateKey, usePractice } from "@lib/practiceLog";
+
+const JOURNAL_PROMPTS = [
+  "What made you smile during training today?",
+  "Where did your puppy settle the quickest?",
+  "What tiny win felt easier than yesterday?",
+  "When did you both take a deep breath together?",
+  "What cue felt clear and calm today?"
+];
 
 type HomeTabNavigation = BottomTabNavigationProp<RootTabParamList>;
 
-const shortcuts: Array<{ label: string; icon: keyof typeof Feather.glyphMap; route: keyof RootTabParamList }> = [
-  { label: "Journal", icon: "edit-3", route: "Journal" },
-  { label: "Gallery", icon: "image", route: "Gallery" }
-];
-
 export const HomeScreen: React.FC = () => {
+  useMidnightPlanReset();
   const theme = useTheme();
   const navigation = useNavigation<HomeTabNavigation>();
   const puppy = usePuppyStore((state) => state.puppy);
   const currentWeekNumber = usePuppyStore((state) => state.getCurrentWeekNumber());
-  const weekSummary: WeekSummary | undefined = useMemo(() => {
+  const planSelector = React.useMemo(() => generateDailyPlan(currentWeekNumber), [currentWeekNumber]);
+  const plan = useDailyPlanStore(planSelector);
+  const reorderLessons = useDailyPlanStore((state) => state.reorderLessons);
+  const toggleLesson = useDailyPlanStore((state) => state.toggleLesson);
+  const resetPlan = useWeeksStore((state) => state.resetPlan);
+
+  const [selectedLessonId, setSelectedLessonId] = React.useState<string | null>(null);
+  const detailPractice = usePractice(selectedLessonId ?? "__home__");
+
+  const { noteDraft, noteStatus, handleNoteChange, handleRetrySave } = useLessonNotes({
+    weekId: plan?.weekId,
+    lessonId: selectedLessonId
+  });
+
+  const planLessons = plan?.lessons ?? [];
+  const planWeekSummary: WeekSummary | undefined = React.useMemo(() => {
+    if (plan?.weekId) {
+      return getWeekById(plan.weekId) ?? getDefaultWeek();
+    }
     if (currentWeekNumber) {
       return getWeekByNumber(currentWeekNumber) ?? getDefaultWeek();
     }
     return getDefaultWeek();
-  }, [currentWeekNumber]);
-  const quickAddWeekId = weekSummary?.id;
-
-  const plan = useDailyPlanStore(generateDailyPlan(currentWeekNumber));
-  const toggleLesson = useDailyPlanStore((state) => state.toggleLesson);
-  const planLessons = plan?.lessons ?? [];
-
-  const handleQuickAdd = useCallback(
-    (lesson?: LessonSummary) => {
-      navigation.navigate("Journal", {
-        quickAdd: true,
-        weekId: quickAddWeekId,
-        lessonId: lesson?.id
-      });
-    },
-    [navigation, quickAddWeekId]
-  );
+  }, [plan?.weekId, currentWeekNumber]);
 
   const practiceEntries = usePracticeEntries();
   const todayKey = React.useMemo(() => getPracticeDateKey(new Date()), []);
-  const practicedTodayIds = React.useMemo(() => {
+  const practicedSet = React.useMemo(() => {
     const ids = new Set<string>();
     practiceEntries.forEach((entry) => {
       if (entry.dateKey === todayKey) {
@@ -61,233 +87,440 @@ export const HomeScreen: React.FC = () => {
     return ids;
   }, [practiceEntries, todayKey]);
 
-  const allPracticed =
-    planLessons.length > 0 && planLessons.every((lesson) => practicedTodayIds.has(lesson.id));
+  const practicedCount = planLessons.filter((lesson) => practicedSet.has(lesson.id)).length;
+  const allPracticed = planLessons.length > 0 && practicedCount === planLessons.length;
 
   const displayName = puppy?.name?.trim() || "Golden friend";
-  const headerSubtitle = weekSummary
-    ? `Week ${weekSummary.number} · ${weekSummary.title}`
-    : "Training plan ready";
+  const headerSummary = planWeekSummary
+    ? `Week ${planWeekSummary.number} · ${planWeekSummary.title}`
+    : "Training plan";
+
+  const quickTip = React.useMemo(() => {
+    if (planLessons.length === 0) {
+      return undefined;
+    }
+    const seed = new Date().getDay() % planLessons.length;
+    const detail = getLessonDetailById(planLessons[seed].id);
+    if (!detail) {
+      return undefined;
+    }
+    const text =
+      detail.supportGuidelines?.[0] ??
+      detail.steps?.[0] ??
+      detail.objective ??
+      "Notice their breath before you cue.";
+    return {
+      title: detail.title,
+      text
+    };
+  }, [planLessons]);
+
+  const journalPrompt = React.useMemo(() => {
+    const index = new Date().getDate() % JOURNAL_PROMPTS.length;
+    return JOURNAL_PROMPTS[index];
+  }, []);
+
+  const selectedLesson: LessonDetail | undefined = React.useMemo(() => {
+    if (!selectedLessonId) {
+      return undefined;
+    }
+    return getLessonDetailById(selectedLessonId);
+  }, [selectedLessonId]);
+
+  const scrollY = useSharedValue(0);
+  const fabProgress = useSharedValue(0);
+  const [fabOpen, setFabOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    fabProgress.value = withTiming(fabOpen ? 1 : 0, { duration: 180 });
+  }, [fabOpen, fabProgress]);
+
+  const scrollHandler = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
+
+  const headerStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(scrollY.value, [0, 90], [0, -26], Extrapolate.CLAMP);
+    const scale = interpolate(scrollY.value, [0, 90], [1, 0.94], Extrapolate.CLAMP);
+    return {
+      transform: [{ translateY }, { scale }]
+    };
+  });
+
+  const handleLessonPress = React.useCallback((lesson: LessonSummary) => {
+    setSelectedLessonId(lesson.id);
+  }, []);
+
+  const handlePlanToggle = React.useCallback(
+    (lessonId: string) => {
+      if (plan) {
+        toggleLesson(plan.weekId, plan.date, lessonId);
+      }
+    },
+    [plan, toggleLesson]
+  );
+
+  const handlePlanOrderChange = React.useCallback(
+    (orderedIds: string[]) => {
+      if (plan) {
+        reorderLessons(plan.weekId, plan.date, orderedIds);
+      }
+    },
+    [plan, reorderLessons]
+  );
+
+  const handleModalTogglePractice = React.useCallback(() => {
+    if (!plan || !selectedLessonId) {
+      return;
+    }
+    detailPractice.toggle();
+    toggleLesson(plan.weekId, plan.date, selectedLessonId);
+  }, [detailPractice, plan, selectedLessonId, toggleLesson]);
+
+  const closeFab = React.useCallback(() => setFabOpen(false), []);
+
+  const scrollContentPadding = theme.spacing(3);
 
   return (
-    <ScreenContainer scrollable>
-      <HeaderSection puppyPhoto={puppy?.photoUri} title={`Hi, ${displayName}`} subtitle={headerSubtitle} focus={weekSummary?.focus} />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}> 
+      <Animated.ScrollView
+        style={styles.flex}
+        contentContainerStyle={{ paddingBottom: theme.spacing(6) }}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+        onScrollBeginDrag={closeFab}
+      >
+        <View style={[styles.container, { paddingHorizontal: theme.spacing(2.5) }]}> 
+          <Animated.View style={[styles.headerCard, headerStyle, { backgroundColor: theme.colors.surface, borderRadius: theme.radius.xl, padding: theme.spacing(2) }]}> 
+            <HeaderSummary
+              title={`Hi, ${displayName}`}
+              subtitle={headerSummary}
+              focus={planWeekSummary?.focus}
+              photoUri={puppy?.photoUri}
+              practicedCount={practicedCount}
+              totalLessons={planLessons.length}
+              allPracticed={allPracticed}
+            />
+          </Animated.View>
 
-      <Card tone="subtle" style={{ marginTop: theme.spacing(2) }}>
-        <Text
-          style={[
-            theme.typography.textVariants.title,
-            { color: theme.colors.textPrimary }
-          ]}
-        >
-          Today&apos;s plan
-        </Text>
-        <Text
-          style={[
-            theme.typography.textVariants.body,
-            {
-              color: theme.colors.textSecondary,
-              marginTop: theme.spacing(0.5)
-            }
-          ]}
-        >
-          {allPracticed
-            ? "Everything is checked off—nice work! Add a journal note or revisit a favorite skill."
-            : "Practice these short sessions to keep training fun and consistent today."}
-        </Text>
-
-        <View style={{ marginTop: theme.spacing(1.5) }}>
-          {planLessons.length > 0 ? (
-            planLessons.map((lesson) => (
-              <DailyPlanCard
-                key={lesson.id}
-                lesson={lesson}
-                onToggle={() => {
-                  if (plan) {
-                    toggleLesson(plan.weekId, plan.date, lesson.id);
-                  }
-                }}
-                onQuickAdd={handleQuickAdd}
-              />
-            ))
-          ) : (
-            <EmptyPlan />
-          )}
-        </View>
-      </Card>
-
-      <Card style={{ marginTop: theme.spacing(2) }}>
-        <Text
-          style={[
-            theme.typography.textVariants.title,
-            { color: theme.colors.textPrimary }
-          ]}
-        >
-          Quick captures
-        </Text>
-        <Text
-          style={[
-            theme.typography.textVariants.body,
-            { color: theme.colors.textSecondary, marginTop: theme.spacing(0.5) }
-          ]}
-        >
-          Save today&apos;s wins while they&apos;re fresh.
-        </Text>
-        <View style={[styles.shortcutsRow, { marginTop: theme.spacing(1.5) }]}>
-          {shortcuts.map((shortcut, index) => (
-            <Pressable
-              key={shortcut.route}
-              onPress={() =>
-                shortcut.route === "Journal"
-                  ? handleQuickAdd()
-                  : navigation.navigate(shortcut.route)
-              }
+          <View style={{ marginTop: scrollContentPadding }}>
+            <Text
               style={[
-                styles.shortcut,
-                {
-                  borderRadius: theme.radius.md,
-                  borderColor: theme.colors.border,
-                  padding: theme.spacing(1.25),
-                  marginRight: index === shortcuts.length - 1 ? 0 : theme.spacing(1)
-                }
+                theme.typography.textVariants.title,
+                { color: theme.colors.textPrimary }
               ]}
             >
-              <View
-                style={[
-                  styles.shortcutIcon,
-                  {
-                    borderRadius: theme.radius.pill,
-                    backgroundColor: theme.colors.primarySoft,
-                    marginBottom: theme.spacing(0.75)
-                  }
-                ]}
-              >
-                <Feather name={shortcut.icon} size={18} color={theme.colors.primary} />
+              Today&apos;s plan
+            </Text>
+            <Text
+              style={[
+                theme.typography.textVariants.body,
+                { color: theme.colors.textSecondary, marginTop: theme.spacing(0.5) }
+              ]}
+            >
+              {allPracticed
+                ? "Everything is checked off — revisit a favorite skill or jot a note."
+                : "Blend these short stories into your day. Long-press to reorder, swipe to log."}
+            </Text>
+
+            {planLessons.length > 0 ? (
+              <View style={{ marginTop: theme.spacing(1.5) }}>
+                <DailyPlanBoard
+                  lessons={planLessons}
+                  onLessonPress={handleLessonPress}
+                  onLessonToggle={handlePlanToggle}
+                  onLessonOrderChange={handlePlanOrderChange}
+                />
               </View>
-              <Text
-                style={[
-                  theme.typography.textVariants.button,
-                  { color: theme.colors.textPrimary }
-                ]}
-              >
-                {shortcut.label}
-              </Text>
-            </Pressable>
-          ))}
+            ) : (
+              <View style={{ marginTop: theme.spacing(2) }}>
+                <EmptyPlanState onRefresh={resetPlan} />
+              </View>
+            )}
+          </View>
+
+          {quickTip ? (
+            <QuickTipCard
+              style={{ marginTop: scrollContentPadding }}
+              lessonTitle={quickTip.title}
+              tip={quickTip.text}
+            />
+          ) : null}
+
+          <JournalPromptFootnote
+            prompt={journalPrompt}
+            style={{ marginTop: scrollContentPadding }}
+          />
         </View>
-      </Card>
-    </ScreenContainer>
+      </Animated.ScrollView>
+
+      <FloatingActionMenu
+        open={fabOpen}
+        progress={fabProgress}
+        onToggle={() => setFabOpen((prev) => !prev)}
+        actions={[
+          {
+            label: "Add Note",
+            icon: "edit-3",
+            onPress: () => {
+              closeFab();
+              navigation.navigate("Journal", {
+                quickAdd: true,
+                weekId: plan?.weekId,
+                lessonId: planLessons[0]?.id
+              });
+            }
+          },
+          {
+            label: "Add Photo",
+            icon: "image",
+            onPress: () => {
+              closeFab();
+              navigation.navigate("Gallery");
+            }
+          }
+        ]}
+      />
+
+      <LessonDetailModal
+        visible={Boolean(selectedLesson)}
+        lesson={selectedLesson}
+        practiced={selectedLesson ? detailPractice.practicedToday : false}
+        notes={noteDraft}
+        noteStatus={noteStatus}
+        onClose={() => setSelectedLessonId(null)}
+        onTogglePractice={handleModalTogglePractice}
+        onChangeNotes={handleNoteChange}
+        onRetrySave={handleRetrySave}
+        onOpenSupportTopic={(supportId) =>
+          navigation.navigate("Support", { focusSupportId: supportId })
+        }
+      />
+    </SafeAreaView>
   );
 };
 
-type HeaderSectionProps = {
-  puppyPhoto?: string;
+type HeaderSummaryProps = {
   title: string;
   subtitle: string;
   focus?: string;
+  photoUri?: string;
+  practicedCount: number;
+  totalLessons: number;
+  allPracticed: boolean;
 };
 
-const HeaderSection: React.FC<HeaderSectionProps> = ({ puppyPhoto, title, subtitle, focus }) => {
+const HeaderSummary: React.FC<HeaderSummaryProps> = ({
+  title,
+  subtitle,
+  focus,
+  photoUri,
+  practicedCount,
+  totalLessons,
+  allPracticed
+}) => {
   const theme = useTheme();
-
   return (
-    <View style={styles.header}>
-      <View
-        style={[
-          styles.avatar,
-          {
-            borderRadius: theme.radius.lg,
-            backgroundColor: theme.colors.surface,
-            shadowColor: theme.shadow.soft.shadowColor,
-            shadowOpacity: theme.shadow.soft.shadowOpacity,
-            shadowRadius: theme.shadow.soft.shadowRadius,
-            shadowOffset: theme.shadow.soft.shadowOffset
-          }
-        ]}
-      >
-        {puppyPhoto ? (
-          <Image
-            source={{ uri: puppyPhoto }}
-            style={[styles.avatarImage, { borderRadius: theme.radius.lg }]}
-            resizeMode="cover"
-          />
+    <View style={styles.headerRow}>
+      <View style={[styles.avatarShell, { borderRadius: theme.radius.lg }]}> 
+        {photoUri ? (
+          <Image source={{ uri: photoUri }} style={styles.avatarImage} />
         ) : (
-          <View
-            style={[
-              styles.avatarFallback,
-              {
-                borderRadius: theme.radius.lg,
-                backgroundColor: theme.colors.primarySoft
-              }
-            ]}
-          >
-            <Feather name="smile" size={28} color={theme.colors.primary} />
+          <View style={[styles.avatarFallback, { backgroundColor: theme.colors.primarySoft }]}> 
+            <Feather name="sun" size={28} color={theme.colors.primary} />
           </View>
         )}
       </View>
-      <View style={styles.headerContent}>
+      <View style={{ flex: 1, marginLeft: theme.spacing(1.5) }}>
         <Text
-          style={[
-            theme.typography.textVariants.heading,
-            { color: theme.colors.textPrimary }
-          ]}
+          style={[theme.typography.textVariants.heading, { color: theme.colors.textPrimary }]}
+          numberOfLines={1}
         >
           {title}
         </Text>
         <Text
-          style={[
-            theme.typography.textVariants.body,
-            { color: theme.colors.textSecondary, marginTop: theme.spacing(0.25) }
-          ]}
+          style={[theme.typography.textVariants.body, { color: theme.colors.textSecondary, marginTop: theme.spacing(0.25) }]}
+          numberOfLines={1}
         >
           {subtitle}
         </Text>
         {focus ? (
           <Text
-            style={[
-              theme.typography.textVariants.caption,
-              { color: theme.colors.textMuted, marginTop: theme.spacing(0.5) }
-            ]}
+            style={[theme.typography.textVariants.caption, { color: theme.colors.textMuted, marginTop: theme.spacing(0.5) }]}
             numberOfLines={2}
           >
             {focus}
           </Text>
         ) : null}
+        <View style={[styles.progressRow, { marginTop: theme.spacing(1) }]}>
+          <Feather
+            name={allPracticed ? "check-circle" : "clock"}
+            size={16}
+            color={allPracticed ? theme.colors.success : theme.colors.primary}
+          />
+          <Text
+            style={[theme.typography.textVariants.body, { color: theme.colors.textPrimary, marginLeft: theme.spacing(0.5) }]}
+          >
+            {totalLessons > 0
+              ? `${practicedCount}/${totalLessons} practiced`
+              : "Plan arrives at midnight"}
+          </Text>
+        </View>
       </View>
     </View>
   );
 };
 
-const EmptyPlan: React.FC = () => {
-  const theme = useTheme();
+type QuickTipCardProps = {
+  lessonTitle: string;
+  tip: string;
+  style?: StyleProp<ViewStyle>;
+};
 
+const QuickTipCard: React.FC<QuickTipCardProps> = ({ lessonTitle, tip, style }) => {
+  const theme = useTheme();
   return (
-    <View style={styles.emptyState}>
-      <Feather name="calendar" size={20} color={theme.colors.textMuted} />
+    <View
+      style={[
+        styles.quickTip,
+        style,
+        {
+          backgroundColor: theme.colors.primarySoft,
+          borderRadius: theme.radius.lg,
+          borderColor: theme.colors.primary,
+          borderWidth: StyleSheet.hairlineWidth
+        }
+      ]}
+    >
       <Text
-        style={[
-          theme.typography.textVariants.body,
-          {
-            color: theme.colors.textSecondary,
-            marginTop: theme.spacing(0.75),
-            textAlign: "center"
-          }
-        ]}
+        style={[theme.typography.textVariants.caption, { color: theme.colors.primary }]}
       >
-        Add or confirm your puppy details to see a personalized plan.
+        Quick tip · {lessonTitle}
+      </Text>
+      <Text
+        style={[theme.typography.textVariants.body, { color: theme.colors.textPrimary, marginTop: theme.spacing(0.5) }]}
+      >
+        {tip}
       </Text>
     </View>
   );
 };
 
+type JournalPromptProps = {
+  prompt: string;
+  style?: StyleProp<ViewStyle>;
+};
+
+const JournalPromptFootnote: React.FC<JournalPromptProps> = ({ prompt, style }) => {
+  const theme = useTheme();
+  return (
+    <View style={[styles.promptContainer, style, { borderColor: theme.colors.border, backgroundColor: theme.colors.surface, borderRadius: theme.radius.lg }]}> 
+      <Feather name="feather" size={18} color={theme.colors.primary} />
+      <Text
+        style={[theme.typography.textVariants.body, { color: theme.colors.textPrimary, flex: 1, marginLeft: theme.spacing(1) }]}
+      >
+        {prompt}
+      </Text>
+    </View>
+  );
+};
+
+type EmptyPlanStateProps = {
+  onRefresh: () => void;
+};
+
+const EmptyPlanState: React.FC<EmptyPlanStateProps> = ({ onRefresh }) => {
+  const theme = useTheme();
+  return (
+    <View
+      style={[styles.emptyPlan, { borderColor: theme.colors.border, backgroundColor: theme.colors.surface, borderRadius: theme.radius.lg }]}
+    >
+      <Text
+        style={[theme.typography.textVariants.bodyStrong, { color: theme.colors.textPrimary }]}
+      >
+        Your new plan is ready — fetch it below 👇
+      </Text>
+      <Pressable
+        onPress={onRefresh}
+        style={[styles.refreshButton, { backgroundColor: theme.colors.primary, borderRadius: theme.radius.pill }]}
+      >
+        <Text style={[theme.typography.textVariants.button, { color: theme.colors.onPrimary }]}>Refresh plan</Text>
+      </Pressable>
+    </View>
+  );
+};
+
+type FloatingActionMenuProps = {
+  open: boolean;
+  progress: SharedValue<number>;
+  onToggle: () => void;
+  actions: Array<{ label: string; icon: keyof typeof Feather.glyphMap; onPress: () => void }>;
+};
+
+const FloatingActionMenu: React.FC<FloatingActionMenuProps> = ({ open, progress, onToggle, actions }) => {
+  const theme = useTheme();
+
+  const menuStyle = useAnimatedStyle(() => ({
+    opacity: progress.value,
+    transform: [
+      {
+        translateY: (1 - progress.value) * 12
+      }
+    ]
+  }));
+
+  return (
+    <View style={styles.fabContainer}>
+      <Animated.View style={[styles.fabMenu, menuStyle]}> 
+        {actions.map((action) => (
+          <Pressable
+            key={action.label}
+            style={[styles.fabAction, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
+            onPress={action.onPress}
+          >
+            <Feather name={action.icon} size={16} color={theme.colors.primary} />
+            <Text
+              style={[theme.typography.textVariants.button, { color: theme.colors.textPrimary, marginLeft: theme.spacing(0.5) }]}
+            >
+              {action.label}
+            </Text>
+          </Pressable>
+        ))}
+      </Animated.View>
+      <Pressable
+        onPress={onToggle}
+        style={[styles.fabButton, { backgroundColor: theme.colors.primary, borderRadius: theme.radius.pill }]}
+      >
+        <Feather
+          name={open ? "x" : "plus"}
+          size={22}
+          color={theme.colors.onPrimary}
+        />
+      </Pressable>
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
-  header: {
+  safeArea: {
+    flex: 1
+  },
+  flex: {
+    flex: 1
+  },
+  container: {
+    flex: 1
+  },
+  headerCard: {
+    width: "100%"
+  },
+  headerRow: {
     flexDirection: "row",
     alignItems: "center"
   },
-  avatar: {
-    width: 72,
-    height: 72,
+  avatarShell: {
+    width: 80,
+    height: 80,
     overflow: "hidden"
   },
   avatarImage: {
@@ -299,25 +532,52 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center"
   },
-  headerContent: {
-    flex: 1,
-    marginLeft: 16
-  },
-  emptyState: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 24
-  },
-  shortcutsRow: {
+  progressRow: {
     flexDirection: "row",
-    justifyContent: "space-between"
+    alignItems: "center"
   },
-  shortcut: {
-    flex: 1,
+  quickTip: {
+    padding: 18
+  },
+  promptContainer: {
+    flexDirection: "row",
     alignItems: "center",
+    padding: 16,
     borderWidth: StyleSheet.hairlineWidth
   },
-  shortcutIcon: {
-    padding: 8
+  emptyPlan: {
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: 20,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  refreshButton: {
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    marginTop: 16
+  },
+  fabContainer: {
+    position: "absolute",
+    bottom: 32,
+    right: 24,
+    alignItems: "flex-end"
+  },
+  fabMenu: {
+    marginBottom: 12
+  },
+  fabAction: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 999,
+    borderWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginBottom: 10
+  },
+  fabButton: {
+    width: 56,
+    height: 56,
+    alignItems: "center",
+    justifyContent: "center"
   }
 });
