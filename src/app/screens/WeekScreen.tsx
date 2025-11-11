@@ -15,7 +15,6 @@ import {
   getDefaultWeek,
   getWeekById,
   getWeekLessonContent,
-  LessonDetail,
   WeekLessonContent
 } from "@data/index";
 import { getWeekIllustrationKey } from "@data/illustrations";
@@ -59,15 +58,7 @@ export const WeekScreen: React.FC = () => {
 
   const [selectedLessonId, setSelectedLessonId] = React.useState<string | null>(null);
 
-  const selectedLesson: LessonDetail | undefined = React.useMemo(() => {
-    if (!selectedLessonId || !weekContent) {
-      return undefined;
-    }
-    return weekContent.lessons.find((lesson) => lesson.id === selectedLessonId);
-  }, [selectedLessonId, weekContent]);
-
   const { noteDraft, noteStatus, handleNoteChange, handleRetrySave } = useLessonNotes({
-    weekId: resolvedWeekId,
     lessonId: selectedLessonId
   });
 
@@ -231,14 +222,14 @@ export const WeekScreen: React.FC = () => {
       </ScreenContainer>
 
       <LessonDetailModal
-        visible={Boolean(selectedLesson)}
-        lesson={selectedLesson}
-        practiced={selectedLesson ? detailPractice.practicedToday : false}
+        visible={Boolean(selectedLessonId)}
+        lessonId={selectedLessonId}
+        practiced={selectedLessonId ? detailPractice.practicedToday : false}
         notes={noteDraft}
         noteStatus={noteStatus}
         onClose={handleCloseModal}
         onTogglePractice={() => {
-          if (selectedLesson) {
+          if (selectedLessonId) {
             detailPractice.toggle();
           }
         }}

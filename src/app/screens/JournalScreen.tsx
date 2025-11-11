@@ -200,9 +200,10 @@ export const JournalScreen: React.FC = () => {
   );
 
   const openModal = useCallback(
-    (payload?: { weekId?: string; lessonId?: string }) => {
+    (payload?: { weekId?: string; lessonId?: string; prefillText?: string }) => {
       setSelectedWeekId(payload?.weekId ?? defaultWeekId);
       setSelectedLessonId(payload?.lessonId);
+      setEntryText(payload?.prefillText ?? "");
       setModalVisible(true);
     },
     [defaultWeekId]
@@ -320,9 +321,20 @@ export const JournalScreen: React.FC = () => {
       if (!route.params?.quickAdd) {
         return;
       }
-      openModal({ weekId: route.params.weekId, lessonId: route.params.lessonId });
-      navigation.setParams({ quickAdd: undefined });
-    }, [navigation, openModal, route.params?.lessonId, route.params?.quickAdd, route.params?.weekId])
+      openModal({
+        weekId: route.params.weekId,
+        lessonId: route.params.lessonId,
+        prefillText: route.params.prompt
+      });
+      navigation.setParams({ quickAdd: undefined, prompt: undefined });
+    }, [
+      navigation,
+      openModal,
+      route.params?.lessonId,
+      route.params?.prompt,
+      route.params?.quickAdd,
+      route.params?.weekId
+    ])
   );
 
   useEffect(() => {

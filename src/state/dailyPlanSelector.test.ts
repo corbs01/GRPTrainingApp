@@ -61,4 +61,57 @@ describe("selectDailyLessons", () => {
     expect(hasCategory("lifeManners")).toBe(true);
     expect(hasCategory("socialization")).toBe(true);
   });
+
+  it("avoids lessons practiced within the last two days when enough alternatives exist", () => {
+    const todayKey = "2024-06-12";
+    const now = Date.parse(`${todayKey}T10:00:00.000Z`);
+    const oneHourAgo = now - 60 * 60 * 1000;
+
+    const engagement: Record<string, LessonEngagement> = {
+      name_game: { lastPracticedAt: oneHourAgo },
+      potty_routine: { lastPracticedAt: oneHourAgo }
+    };
+
+    const selection = selectDailyLessons({
+      lessonPool: [
+        "name_game",
+        "potty_routine",
+        "sound_socialization",
+        "hand_touch",
+        "alone_time_1",
+        "gentle_mouth_1"
+      ],
+      todayKey,
+      engagement,
+      now
+    });
+
+    expect(selection).toHaveLength(5);
+    const recentSelections = selection.filter((lessonId) =>
+      ["name_game", "potty_routine"].includes(lessonId)
+    );
+    expect(recentSelections.length).toBeLessThanOrEqual(1);
+  });
+
+  it("falls back to recently practiced lessons when the pool is too small", () => {
+    const todayKey = "2024-06-14";
+    const now = Date.parse(`${todayKey}T09:00:00.000Z`);
+    const fourHoursAgo = now - 4 * 60 * 60 * 1000;
+
+    const engagement: Record<string, LessonEngagement> = {
+      hand_touch: { lastPracticedAt: fourHoursAgo },
+      alone_time_1: { lastPracticedAt: fourHoursAgo },
+      gentle_mouth_1: { lastPracticedAt: fourHoursAgo }
+    };
+
+    const selection = selectDailyLessons({
+      lessonPool: ["name_game", "hand_touch", "alone_time_1", "gentle_mouth_1"],
+      todayKey,
+      engagement,
+      now
+    });
+
+    expect(selection).toHaveLength(4);
+    expect(selection).toEqual(expect.arrayContaining(["hand_touch", "alone_time_1", "gentle_mouth_1"]));
+  });
 });

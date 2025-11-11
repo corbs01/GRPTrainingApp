@@ -8,6 +8,7 @@ export type RootTabParamList = {
         quickAdd?: boolean;
         weekId?: string;
         lessonId?: string;
+        prompt?: string;
       }
     | undefined;
   Gallery: undefined;

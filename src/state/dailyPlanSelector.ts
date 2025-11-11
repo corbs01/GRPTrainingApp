@@ -10,6 +10,8 @@ type PlanCandidate = {
   categories: LessonCategory[];
   lastPracticedAt?: number;
   lastShownByDate?: string;
+  recentlyPracticed: boolean;
+  neverPracticed: boolean;
 };
 
 type PlanSelectionInput = {
@@ -48,17 +50,19 @@ const determineTargetCount = (available: number): number => {
 
 const sortCandidates = (candidates: PlanCandidate[], now: number): PlanCandidate[] => {
   return [...candidates].sort((a, b) => {
-    const aDelta = a.lastPracticedAt ? now - a.lastPracticedAt : Number.POSITIVE_INFINITY;
-    const bDelta = b.lastPracticedAt ? now - b.lastPracticedAt : Number.POSITIVE_INFINITY;
-    const aStale = aDelta >= FORTY_EIGHT_HOURS_MS;
-    const bStale = bDelta >= FORTY_EIGHT_HOURS_MS;
-
-    if (aStale !== bStale) {
-      return aStale ? -1 : 1;
+    if (a.neverPracticed !== b.neverPracticed) {
+      return a.neverPracticed ? -1 : 1;
     }
 
+    if (a.recentlyPracticed !== b.recentlyPracticed) {
+      return a.recentlyPracticed ? 1 : -1;
+    }
+
+    const aDelta = a.lastPracticedAt ? now - a.lastPracticedAt : Number.POSITIVE_INFINITY;
+    const bDelta = b.lastPracticedAt ? now - b.lastPracticedAt : Number.POSITIVE_INFINITY;
+
     if (aDelta !== bDelta) {
-      return bDelta - aDelta;
+      return aDelta > bDelta ? -1 : 1;
     }
 
     return a.id.localeCompare(b.id);
@@ -87,14 +91,25 @@ export const selectDailyLessons = ({
   }
 
   const targetCount = determineTargetCount(uniqueLessonIds.length);
-  const candidates: PlanCandidate[] = uniqueLessonIds.map((lessonId) => ({
-    id: lessonId,
-    categories: getLessonCategories(lessonId),
-    lastPracticedAt: engagement[lessonId]?.lastPracticedAt,
-    lastShownByDate: engagement[lessonId]?.lastShownByDate
-  }));
+  const candidates: PlanCandidate[] = uniqueLessonIds.map((lessonId) => {
+    const lastPracticedAt = engagement[lessonId]?.lastPracticedAt;
+    const neverPracticed = typeof lastPracticedAt !== "number";
+    const recentlyPracticed =
+      typeof lastPracticedAt === "number" && now - lastPracticedAt < FORTY_EIGHT_HOURS_MS;
+    return {
+      id: lessonId,
+      categories: getLessonCategories(lessonId),
+      lastPracticedAt,
+      lastShownByDate: engagement[lessonId]?.lastShownByDate,
+      recentlyPracticed,
+      neverPracticed
+    };
+  });
 
   const orderedCandidates = sortCandidates(candidates, now);
+  const preferredCandidates = orderedCandidates.filter((candidate) => !candidate.recentlyPracticed);
+  const cooldownCandidates = orderedCandidates.filter((candidate) => candidate.recentlyPracticed);
+  const orderedByPreference = [...preferredCandidates, ...cooldownCandidates];
   const yesterdayKey = getYesterdayKey(todayKey);
   const selection: PlanCandidate[] = [];
   const selectedIds = new Set<string>();
@@ -131,20 +146,24 @@ export const selectDailyLessons = ({
     return removed;
   };
 
-  for (const candidate of orderedCandidates) {
-    if (selection.length >= targetCount) {
-      break;
-    }
-    addCandidate(candidate, false);
-  }
-
-  if (selection.length < targetCount) {
-    for (const candidate of orderedCandidates) {
+  const fillFromPool = (pool: PlanCandidate[], allowRepeatOverflow: boolean) => {
+    for (const candidate of pool) {
       if (selection.length >= targetCount) {
         break;
       }
-      addCandidate(candidate, true);
+      addCandidate(candidate, allowRepeatOverflow);
     }
+  };
+
+  fillFromPool(preferredCandidates, false);
+  if (selection.length < targetCount) {
+    fillFromPool(preferredCandidates, true);
+  }
+  if (selection.length < targetCount) {
+    fillFromPool(cooldownCandidates, false);
+  }
+  if (selection.length < targetCount) {
+    fillFromPool(cooldownCandidates, true);
   }
 
   const tryEnsureCategory = (category: LessonCategory, required: boolean) => {
@@ -152,7 +171,7 @@ export const selectDailyLessons = ({
       return;
     }
 
-    const pool = orderedCandidates.filter(
+    const pool = orderedByPreference.filter(
       (candidate) => candidate.categories.includes(category) && !selectedIds.has(candidate.id)
     );
 

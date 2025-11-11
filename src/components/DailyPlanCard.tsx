@@ -58,6 +58,7 @@ export const DailyPlanCard: React.FC<DailyPlanCardProps> = ({
   const practicedOverride = useWeeksStore(
     React.useCallback((state) => state.practicedOverrides[lessonId], [lessonId])
   );
+  const togglePractice = useWeeksStore((state) => state.togglePractice);
   const setLessonPracticeStatus = useWeeksStore((state) => state.setLessonPracticeStatus);
   const pressScale = useSharedValue(1);
   const [togglePending, setTogglePending] = React.useState(false);
@@ -95,9 +96,8 @@ export const DailyPlanCard: React.FC<DailyPlanCardProps> = ({
       if (togglePending) {
         return;
       }
-      const next = !localPracticed;
+      const next = togglePractice(lessonId);
       setLocalPracticed(next);
-      setLessonPracticeStatus(lessonId, next);
       const maybePromise = onTogglePractice?.(lessonId, next);
       if (maybePromise && typeof (maybePromise as Promise<void>).then === "function") {
         setTogglePending(true);
@@ -115,7 +115,7 @@ export const DailyPlanCard: React.FC<DailyPlanCardProps> = ({
           .finally(() => setTogglePending(false));
       }
     },
-    [lessonId, localPracticed, onTogglePractice, setLessonPracticeStatus, togglePending]
+    [lessonId, onTogglePractice, setLessonPracticeStatus, togglePending, togglePractice]
   );
 
   const handlePressIn = React.useCallback(() => {

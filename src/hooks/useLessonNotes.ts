@@ -1,30 +1,23 @@
 import React from "react";
 
-import { useTrainingStore } from "@state/trainingStore";
+import { useJournalStore } from "@state/journalStore";
 import { NoteSaveStatus } from "@components/LessonDetailModal";
 
 const NOTE_DEBOUNCE_MS = 300;
 const NOTE_STATUS_RESET_MS = 2000;
 
 type PendingSave = {
-  weekId: string;
   lessonId: string;
   text: string;
 };
 
 type UseLessonNotesArgs = {
-  weekId?: string | null;
   lessonId?: string | null;
 };
 
-export const useLessonNotes = ({ weekId, lessonId }: UseLessonNotesArgs) => {
-  const updateLessonNotes = useTrainingStore((state) => state.updateLessonNotes);
-  const lessonNotes = useTrainingStore(
-    React.useCallback(
-      (state) => (weekId ? state.weeks[weekId]?.lessonNotes ?? {} : {}),
-      [weekId]
-    )
-  );
+export const useLessonNotes = ({ lessonId }: UseLessonNotesArgs) => {
+  const setLessonNote = useJournalStore((state) => state.setLessonNote);
+  const lessonNotes = useJournalStore((state) => state.lessonNotes);
 
   const [noteDraft, setNoteDraft] = React.useState<string>("");
   const [noteStatus, setNoteStatus] = React.useState<NoteSaveStatus>("idle");
@@ -66,7 +59,7 @@ export const useLessonNotes = ({ weekId, lessonId }: UseLessonNotesArgs) => {
     }
     setNoteStatus("saving");
     try {
-      updateLessonNotes(payload.weekId, payload.lessonId, payload.text);
+      setLessonNote(payload.lessonId, payload.text);
       pendingSaveRef.current = null;
       if (savedAckTimeoutRef.current) {
         clearTimeout(savedAckTimeoutRef.current);
@@ -78,15 +71,14 @@ export const useLessonNotes = ({ weekId, lessonId }: UseLessonNotesArgs) => {
     } catch {
       setNoteStatus("error");
     }
-  }, [updateLessonNotes]);
+  }, [setLessonNote]);
 
   const queueNoteSave = React.useCallback(
     (text: string) => {
-      if (!weekId || !lessonId) {
+      if (!lessonId) {
         return;
       }
       pendingSaveRef.current = {
-        weekId,
         lessonId,
         text
       };
@@ -101,7 +93,7 @@ export const useLessonNotes = ({ weekId, lessonId }: UseLessonNotesArgs) => {
         flushPendingSave();
       }, NOTE_DEBOUNCE_MS);
     },
-    [flushPendingSave, lessonId, weekId]
+    [flushPendingSave, lessonId]
   );
 
   const handleNoteChange = React.useCallback(
@@ -113,9 +105,8 @@ export const useLessonNotes = ({ weekId, lessonId }: UseLessonNotesArgs) => {
   );
 
   const handleRetrySave = React.useCallback(() => {
-    if (!pendingSaveRef.current && weekId && lessonId) {
+    if (!pendingSaveRef.current && lessonId) {
       pendingSaveRef.current = {
-        weekId,
         lessonId,
         text: noteDraft
       };
@@ -125,7 +116,7 @@ export const useLessonNotes = ({ weekId, lessonId }: UseLessonNotesArgs) => {
       saveTimeoutRef.current = null;
     }
     flushPendingSave();
-  }, [flushPendingSave, lessonId, noteDraft, weekId]);
+  }, [flushPendingSave, lessonId, noteDraft]);
 
   React.useEffect(() => () => clearTimers(), [clearTimers]);
 
@@ -136,4 +127,3 @@ export const useLessonNotes = ({ weekId, lessonId }: UseLessonNotesArgs) => {
     handleRetrySave
   };
 };
-

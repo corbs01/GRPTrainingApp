@@ -15,9 +15,12 @@ export type JournalEntry = {
 
 type JournalState = {
   entries: JournalEntry[];
+  lessonNotes: Record<string, string>;
   addEntry: (payload: Omit<JournalEntry, "id" | "createdAt">) => void;
   removeEntry: (entryId: string) => void;
   stripMediaByUri: (uri: string) => void;
+  setLessonNote: (lessonId: string, text: string) => void;
+  removeLessonNote: (lessonId: string) => void;
   clearAll: () => void;
 };
 
@@ -28,6 +31,7 @@ export const useJournalStore = create<JournalState>()(
   persist(
     (set) => ({
       entries: [],
+      lessonNotes: {},
       addEntry: ({ weekId, lessonId, text, photoUri, thumbnailUri }) =>
         set((state) => ({
           entries: [
@@ -59,9 +63,29 @@ export const useJournalStore = create<JournalState>()(
             return next;
           })
         })),
+      setLessonNote: (lessonId, text) =>
+        set((state) => ({
+          lessonNotes: {
+            ...state.lessonNotes,
+            [lessonId]: text
+          }
+        })),
+      removeLessonNote: (lessonId) =>
+        set((state) => {
+          if (!state.lessonNotes[lessonId]) {
+            return state;
+          }
+          const nextNotes = { ...state.lessonNotes };
+          delete nextNotes[lessonId];
+          return {
+            ...state,
+            lessonNotes: nextNotes
+          };
+        }),
       clearAll: () =>
         set({
-          entries: []
+          entries: [],
+          lessonNotes: {}
         })
     }),
     {

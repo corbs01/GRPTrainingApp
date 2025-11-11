@@ -3,6 +3,7 @@ import { Image, Pressable, StyleProp, StyleSheet, Text, View, ViewStyle } from "
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, {
   Extrapolate,
+  FadeIn,
   interpolate,
   useAnimatedScrollHandler,
   useAnimatedStyle,
@@ -23,7 +24,6 @@ import {
   getLessonDetailById,
   getWeekById,
   getWeekByNumber,
-  LessonDetail,
   LessonSummary,
   WeekSummary
 } from "@data/index";
@@ -35,11 +35,12 @@ import { useLessonNotes } from "@hooks/useLessonNotes";
 import { usePracticeEntries, getPracticeDateKey, usePractice } from "@lib/practiceLog";
 
 const JOURNAL_PROMPTS = [
-  "What made you smile during training today?",
-  "Where did your puppy settle the quickest?",
-  "What tiny win felt easier than yesterday?",
-  "When did you both take a deep breath together?",
-  "What cue felt clear and calm today?"
+  "What made your puppy proud today?",
+  "Where did you both pause and reset with ease?",
+  "Which cue felt softer or clearer than yesterday?",
+  "When did you notice your puppy taking a deep breath?",
+  "What tiny win do you want to remember from today?",
+  "How did you stay calm together when things got wiggly?"
 ];
 
 type HomeTabNavigation = BottomTabNavigationProp<RootTabParamList>;
@@ -54,17 +55,38 @@ export const HomeScreen: React.FC = () => {
   const plan = useDailyPlanStore(planSelector);
   const reorderLessons = useDailyPlanStore((state) => state.reorderLessons);
   const toggleLesson = useDailyPlanStore((state) => state.toggleLesson);
-  const resetPlan = useWeeksStore((state) => state.resetPlan);
+  const resetDailyPlan = useWeeksStore((state) => state.resetDailyPlan);
+  const orderedLessonIds = useWeeksStore((state) => state.orderedLessonIds);
+  const setLessonOrdering = useWeeksStore((state) => state.setLessonOrdering);
+  const setActivePlanDate = useWeeksStore((state) => state.setActiveDate);
 
   const [selectedLessonId, setSelectedLessonId] = React.useState<string | null>(null);
   const detailPractice = usePractice(selectedLessonId ?? "__home__");
 
   const { noteDraft, noteStatus, handleNoteChange, handleRetrySave } = useLessonNotes({
-    weekId: plan?.weekId,
     lessonId: selectedLessonId
   });
 
-  const planLessons = plan?.lessons ?? [];
+  const rawPlanLessons = plan?.lessons ?? [];
+  const planLessons = React.useMemo(() => {
+    if (!rawPlanLessons.length || orderedLessonIds.length === 0) {
+      return rawPlanLessons;
+    }
+    const assigned = new Set<string>();
+    const prioritized: LessonSummary[] = [];
+    orderedLessonIds.forEach((lessonId) => {
+      const match = rawPlanLessons.find((lesson) => lesson.id === lessonId);
+      if (match && !assigned.has(lessonId)) {
+        prioritized.push(match);
+        assigned.add(lessonId);
+      }
+    });
+    if (prioritized.length === rawPlanLessons.length) {
+      return prioritized;
+    }
+    const remainder = rawPlanLessons.filter((lesson) => !assigned.has(lesson.id));
+    return [...prioritized, ...remainder];
+  }, [orderedLessonIds, rawPlanLessons]);
   const planWeekSummary: WeekSummary | undefined = React.useMemo(() => {
     if (plan?.weekId) {
       return getWeekById(plan.weekId) ?? getDefaultWeek();
@@ -74,6 +96,12 @@ export const HomeScreen: React.FC = () => {
     }
     return getDefaultWeek();
   }, [plan?.weekId, currentWeekNumber]);
+
+  React.useEffect(() => {
+    if (plan?.date) {
+      setActivePlanDate(plan.date);
+    }
+  }, [plan?.date, setActivePlanDate]);
 
   const practiceEntries = usePracticeEntries();
   const todayKey = React.useMemo(() => getPracticeDateKey(new Date()), []);
@@ -116,16 +144,19 @@ export const HomeScreen: React.FC = () => {
   }, [planLessons]);
 
   const journalPrompt = React.useMemo(() => {
-    const index = new Date().getDate() % JOURNAL_PROMPTS.length;
+    const seed = plan?.date ?? todayKey;
+    const charTotal = seed.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const index = charTotal % JOURNAL_PROMPTS.length;
     return JOURNAL_PROMPTS[index];
-  }, []);
+  }, [plan?.date, todayKey]);
 
-  const selectedLesson: LessonDetail | undefined = React.useMemo(() => {
-    if (!selectedLessonId) {
-      return undefined;
-    }
-    return getLessonDetailById(selectedLessonId);
-  }, [selectedLessonId]);
+  const handleJournalPromptPress = React.useCallback(() => {
+    navigation.navigate("Journal", {
+      quickAdd: true,
+      weekId: plan?.weekId,
+      prompt: journalPrompt
+    });
+  }, [journalPrompt, navigation, plan?.weekId]);
 
   const scrollY = useSharedValue(0);
   const fabProgress = useSharedValue(0);
@@ -164,9 +195,10 @@ export const HomeScreen: React.FC = () => {
     (orderedIds: string[]) => {
       if (plan) {
         reorderLessons(plan.weekId, plan.date, orderedIds);
+        setLessonOrdering(orderedIds);
       }
     },
-    [plan, reorderLessons]
+    [plan, reorderLessons, setLessonOrdering]
   );
 
   const handleModalTogglePractice = React.useCallback(() => {
@@ -234,9 +266,15 @@ export const HomeScreen: React.FC = () => {
               </View>
             ) : (
               <View style={{ marginTop: theme.spacing(2) }}>
-                <EmptyPlanState onRefresh={resetPlan} />
+                <EmptyPlanState onRefresh={resetDailyPlan} />
               </View>
             )}
+
+            <JournalPromptFootnote
+              prompt={journalPrompt}
+              onPress={handleJournalPromptPress}
+              style={{ marginTop: theme.spacing(2) }}
+            />
           </View>
 
           {quickTip ? (
@@ -246,11 +284,6 @@ export const HomeScreen: React.FC = () => {
               tip={quickTip.text}
             />
           ) : null}
-
-          <JournalPromptFootnote
-            prompt={journalPrompt}
-            style={{ marginTop: scrollContentPadding }}
-          />
         </View>
       </Animated.ScrollView>
 
@@ -283,9 +316,9 @@ export const HomeScreen: React.FC = () => {
       />
 
       <LessonDetailModal
-        visible={Boolean(selectedLesson)}
-        lesson={selectedLesson}
-        practiced={selectedLesson ? detailPractice.practicedToday : false}
+        visible={Boolean(selectedLessonId)}
+        lessonId={selectedLessonId}
+        practiced={selectedLessonId ? detailPractice.practicedToday : false}
         notes={noteDraft}
         noteStatus={noteStatus}
         onClose={() => setSelectedLessonId(null)}
@@ -408,20 +441,41 @@ const QuickTipCard: React.FC<QuickTipCardProps> = ({ lessonTitle, tip, style }) 
 
 type JournalPromptProps = {
   prompt: string;
+  onPress: () => void;
   style?: StyleProp<ViewStyle>;
 };
 
-const JournalPromptFootnote: React.FC<JournalPromptProps> = ({ prompt, style }) => {
+const JournalPromptFootnote: React.FC<JournalPromptProps> = ({ prompt, onPress, style }) => {
   const theme = useTheme();
   return (
-    <View style={[styles.promptContainer, style, { borderColor: theme.colors.border, backgroundColor: theme.colors.surface, borderRadius: theme.radius.lg }]}> 
-      <Feather name="feather" size={18} color={theme.colors.primary} />
-      <Text
-        style={[theme.typography.textVariants.body, { color: theme.colors.textPrimary, flex: 1, marginLeft: theme.spacing(1) }]}
-      >
-        {prompt}
-      </Text>
-    </View>
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel="Add journal entry from prompt">
+      <Animated.View
+        entering={FadeIn.duration(350).delay(120)}
+        style={[
+          styles.promptContainer,
+          style,
+          {
+            borderColor: theme.colors.border,
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.radius.lg
+          }
+        ]}
+      > 
+        <Text
+          style={[
+            theme.typography.textVariants.body,
+            {
+              color: theme.colors.textMuted,
+              fontStyle: "italic",
+              textAlign: "center",
+              flex: 1
+            }
+          ]}
+        >
+          {prompt}
+        </Text>
+      </Animated.View>
+    </Pressable>
   );
 };
 
@@ -540,9 +594,10 @@ const styles = StyleSheet.create({
     padding: 18
   },
   promptContainer: {
-    flexDirection: "row",
     alignItems: "center",
-    padding: 16,
+    justifyContent: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 20,
     borderWidth: StyleSheet.hairlineWidth
   },
   emptyPlan: {

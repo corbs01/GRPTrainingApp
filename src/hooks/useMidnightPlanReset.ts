@@ -14,7 +14,7 @@ const getMsUntilNextMidnight = () => {
 };
 
 export const useMidnightPlanReset = () => {
-  const resetPlan = useWeeksStore((state) => state.resetPlan);
+  const resetDailyPlan = useWeeksStore((state) => state.resetDailyPlan);
   const lastResetKeyRef = React.useRef<string>(getTodayKey());
 
   React.useEffect(() => {
@@ -26,7 +26,7 @@ export const useMidnightPlanReset = () => {
         return;
       }
       lastResetKeyRef.current = todayKey;
-      resetPlan();
+      resetDailyPlan();
     };
 
     const scheduleNext = () => {
@@ -55,6 +55,5 @@ export const useMidnightPlanReset = () => {
       }
       appStateSub.remove();
     };
-  }, [resetPlan]);
+  }, [resetDailyPlan]);
 };
-
